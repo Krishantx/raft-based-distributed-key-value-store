@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 var memoryDB map[string]string
@@ -17,8 +18,15 @@ type UserRequest struct {
 	Value string `json:"value"`
 }
 
+type Config struct {
+	NodeName string
+}
+
 func main() {
-	fmt.Println("Hello World")
+
+	var config Config = Config{}
+	setConfig(&config)
+	fmt.Println(config.NodeName)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /{key}", getKeyValue)
@@ -30,6 +38,10 @@ func main() {
 		fmt.Printf("Server Failed to Start: %s", err)
 	}
 	fmt.Println("Server Listning on Port: 8080")
+}
+
+func setConfig(config *Config) {
+	config.NodeName = os.Getenv("node_name")
 }
 
 func getKeyValue(w http.ResponseWriter, req *http.Request) {

@@ -1,0 +1,42 @@
+name: raft-based-kv
+
+services:
+  raft-1:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    ports:
+      - 8080:8080
+    environment:
+        node_name: A
+    container_name: raft-node-1
+  raft-2:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    environment:
+        node_name: B
+  raft-3:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    environment:
+        node_name: C 
+  raft-4:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    environment:
+        node_name: D
+  raft-5:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    container_name: raft-node-5
+    environment:
+        node_name: E
+#   raft-aware-proxy:
+#
+# volumes:
+# networks:
+#

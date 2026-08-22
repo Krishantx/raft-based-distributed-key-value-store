@@ -1,0 +1,15 @@
+FROM golang:1.26.5 AS builder
+
+WORKDIR /app
+
+COPY . .
+
+RUN go build -o raft-node ./cmd/raft-node
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/raft-node .
+
+CMD ["./raft-node"]

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+message LeaderDetails {
+  string leader = 1;
+}
+
+message NodeResponse {
+  oneof result {
+    LeaderDetails leaderDetails = 1;
+    ClientResponse clientResponse =  2;
+  }
+}
+
+message ClientResponse {
+  int32 responseCode = 1;
+}
+
+message KeyValuePair {
+  string Key = 1;
+  string Value = 2;
+}
+
+service KeyValueOperation {
+  rpc AddKeyValue(KeyValuePair) returns (NodeResponse);
+}

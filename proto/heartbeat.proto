@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "./proto";
+
+message LeaderDetails {
+  string NodeName = 1;
+}
+
+message ClientConfirmation {
+  int32 term = 1;
+}
+
+service SendHeartbeat{
+  rpc RecieveHeartbeat(LeaderDetails) returns (ClientConfirmation);
+}

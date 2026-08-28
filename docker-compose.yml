@@ -9,6 +9,7 @@ services:
       - 8080:8080
     environment:
         node_name: A
+        role: leader
     container_name: raft-node-1
   raft-2:
     build: 
@@ -16,18 +17,21 @@ services:
       dockerfile: ./docker/Dockerfile.node
     environment:
         node_name: B
+        role: follower
   raft-3:
     build: 
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
         node_name: C 
+        role: follower
   raft-4:
     build: 
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
         node_name: D
+        role: follower
   raft-5:
     build: 
       context: .
@@ -35,6 +39,7 @@ services:
     container_name: raft-node-5
     environment:
         node_name: E
+        role: follower
 #   raft-aware-proxy:
 #
 # volumes:

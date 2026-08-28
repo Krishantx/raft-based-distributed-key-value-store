@@ -4,25 +4,32 @@ import (
 	"fmt"
 	"os"
 	controller "raft-based-kv/internal/controller"
+	service "raft-based-kv/internal/service"
+	"strconv"
 )
 
-var memoryDB map[string]string
-
-func init() {
-	memoryDB = make(map[string]string)
-}
-
+// Change Role type to enum later
 type Config struct {
-	NodeName string
+	NodeName     string
+	ElectionTime int
+	Role         string
 }
 
 func main() {
-	go controller.StartHTTPController()
-	var config Config = Config{}
+	var config = Config{}
 	setConfig(&config)
-	fmt.Println(config.NodeName)
+
+	go controller.StartgRpcController()
+	go service.StartElectionTimer(config.ElectionTime)
 }
 
 func setConfig(config *Config) {
 	config.NodeName = os.Getenv("node_name")
+	time, err := strconv.Atoi(os.Getenv("election_time"))
+	if err != nil {
+		fmt.Printf("Cannot parse Election Time: %s", err)
+	}
+	config.ElectionTime = time
+	config.Role = os.Getenv("role")
+
 }

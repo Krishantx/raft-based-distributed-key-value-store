@@ -21,6 +21,7 @@ services:
     environment:
         node_name: B
         role: follower
+        election_time: 5
     container_name: raft-node-2
   raft-3:
     build: 
@@ -29,6 +30,7 @@ services:
     environment:
         node_name: C 
         role: follower
+        election_time: 5
     container_name: raft-node-3
   raft-4:
     build: 
@@ -37,6 +39,7 @@ services:
     environment:
         node_name: D
         role: follower
+        election_time: 5
     container_name: raft-node-4
   raft-5:
     build: 
@@ -46,7 +49,14 @@ services:
     environment:
         node_name: E
         role: follower
-#   raft-aware-proxy:
+        election_time: 5
+  raft-aware-proxy:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.proxy
+    container_name: raft-aware-proxy
+    ports: 
+      - "8080:8080"
 #
 # volumes:
 # networks:

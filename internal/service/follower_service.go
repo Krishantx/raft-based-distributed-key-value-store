@@ -12,7 +12,17 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func StartFollowerService(config models.Config, ch chan bool) {
+type Follower_Service struct {
+	VotingTimeout int
+}
+
+func New_Follower_Service(VotingTimeout int) Follower_Service {
+	return Follower_Service{
+		VotingTimeout: VotingTimeout,
+	}
+}
+
+func (this *Follower_Service) StartFollowerService(config models.Config, ch chan bool, votingChan chan bool) {
 	StartElectionTimer(config, ch)
 }
 
@@ -54,7 +64,7 @@ func grpcClientForVoting(addr string) {
 }
 
 func StartVoting() {
-	nodes := [...]string{"raft-node-2", "raft-node-3", "raft-node-4", "raft-node-5"}
+	nodes := [...]string{"raft-node-1", "raft-node-2", "raft-node-3", "raft-node-4", "raft-node-5"}
 	for i := range len(nodes) {
 		grpcClientForVoting(nodes[i] + ":50051")
 	}

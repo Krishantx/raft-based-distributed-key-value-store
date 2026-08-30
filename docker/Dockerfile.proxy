@@ -1,0 +1,15 @@
+FROM golang:1.26.5 AS builder
+
+WORKDIR /app
+
+COPY . .
+
+RUN go build -o raft-proxy ./cmd/raft-aware-proxy
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/raft-proxy .
+
+CMD ["./raft-proxy"]

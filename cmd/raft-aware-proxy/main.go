@@ -1,10 +1,14 @@
 package main
 
 import (
-// "raft-based-kv/internal/controller"
+	controller "raft-based-kv/internal/controller"
+	"raft-based-kv/internal/service"
 )
 
 func main() {
-	// go controller.StartHTTPController()
+	proxyService := service.NewProxyService()
+	httpController := controller.NewHTTPController(proxyService)
+	go httpController.StartHTTPController(proxyService)
 
+	select {}
 }

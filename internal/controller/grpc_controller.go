@@ -13,6 +13,13 @@ import (
 
 var channel chan bool
 
+type gRPC_Server struct {
+}
+
+func New_gRPC_Server() *gRPC_Server {
+	return &gRPC_Server{}
+}
+
 type server struct {
 	pb.UnimplementedHeartbeatServiceServer
 }
@@ -36,7 +43,7 @@ func (s *server) ReceiveHeartbeat(context context.Context, in *pb.LeaderDetails)
 		Term: 1,
 	}, nil
 }
-func StartgRpcController(config models.Config, ch chan bool) {
+func (s *gRPC_Server) StartgRpcController(config models.Config, ch chan bool, voteChan chan bool) {
 
 	channel = ch
 

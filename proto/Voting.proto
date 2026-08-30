@@ -1,0 +1,18 @@
+syntax="proto3";
+
+option go_package="./proto";
+
+service VotingService {
+  rpc StartVoting(NodeInfo) returns (Vote);
+}
+
+message Vote {
+  bool vote = 1;
+}
+
+message NodeInfo {
+  int32 term = 1;
+  int32 log = 2;
+  string node_name = 3; 
+}
+

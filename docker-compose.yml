@@ -6,11 +6,14 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.node
     ports:
-      - 8080:8080
+      - 50051:50051
     environment:
         node_name: A
         role: leader
+        election_time: 5
+        followers: raft-node-2,raft-node-3,raft-node-4,raft-node-5
     container_name: raft-node-1
+
   raft-2:
     build: 
       context: .
@@ -18,6 +21,7 @@ services:
     environment:
         node_name: B
         role: follower
+    container_name: raft-node-2
   raft-3:
     build: 
       context: .
@@ -25,6 +29,7 @@ services:
     environment:
         node_name: C 
         role: follower
+    container_name: raft-node-3
   raft-4:
     build: 
       context: .
@@ -32,6 +37,7 @@ services:
     environment:
         node_name: D
         role: follower
+    container_name: raft-node-4
   raft-5:
     build: 
       context: .

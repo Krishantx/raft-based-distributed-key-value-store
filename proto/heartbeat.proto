@@ -4,11 +4,10 @@ option go_package = "./proto";
 message LeaderDetails {
   string NodeName = 1;
 }
-
 message ClientConfirmation {
-  int32 term = 1;
+  int32 Term = 1;
 }
 
-service SendHeartbeat{
-  rpc RecieveHeartbeat(LeaderDetails) returns (ClientConfirmation);
+service HeartbeatService{
+  rpc ReceiveHeartbeat(LeaderDetails) returns (ClientConfirmation);
 }

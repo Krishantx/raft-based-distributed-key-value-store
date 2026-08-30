@@ -4,26 +4,31 @@ import (
 	"fmt"
 	"os"
 	controller "raft-based-kv/internal/controller"
-	service "raft-based-kv/internal/service"
+	models "raft-based-kv/internal/models"
+	"raft-based-kv/internal/service"
 	"strconv"
+	"strings"
 )
 
-// Change Role type to enum later
-type Config struct {
-	NodeName     string
-	ElectionTime int
-	Role         string
-}
+var term = 1
+var log = 1
 
 func main() {
-	var config = Config{}
+	channel := make(chan bool, 2)
+	var config = models.Config{}
 	setConfig(&config)
 
-	go controller.StartgRpcController()
-	go service.StartElectionTimer(config.ElectionTime)
+	go controller.StartgRpcController(config, channel)
+	for {
+		if config.Role == "follower" {
+			service.StartFollowerService(config, channel)
+		} else {
+			service.StartLeaderService(config, channel)
+		}
+	}
 }
 
-func setConfig(config *Config) {
+func setConfig(config *models.Config) {
 	config.NodeName = os.Getenv("node_name")
 	time, err := strconv.Atoi(os.Getenv("election_time"))
 	if err != nil {
@@ -31,5 +36,5 @@ func setConfig(config *Config) {
 	}
 	config.ElectionTime = time
 	config.Role = os.Getenv("role")
-
+	config.Follower = strings.Split(os.Getenv("followers"), ",")
 }

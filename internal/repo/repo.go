@@ -9,7 +9,7 @@ func init() {
 }
 
 func getKeyValue(key string) string {
-
+	return "Hello"
 }
 
 func addKeyValue(key string, value string) {

@@ -67,7 +67,7 @@ func (x *LeaderDetails) GetNodeName() string {
 
 type ClientConfirmation struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Term          int32                  `protobuf:"varint,1,opt,name=term,proto3" json:"term,omitempty"`
+	Term          int32                  `protobuf:"varint,1,opt,name=Term,proto3" json:"Term,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -117,9 +117,9 @@ const file_proto_heartbeat_proto_rawDesc = "" +
 	"\rLeaderDetails\x12\x1a\n" +
 	"\bNodeName\x18\x01 \x01(\tR\bNodeName\"(\n" +
 	"\x12ClientConfirmation\x12\x12\n" +
-	"\x04term\x18\x01 \x01(\x05R\x04term2H\n" +
-	"\rSendHeartbeat\x127\n" +
-	"\x10RecieveHeartbeat\x12\x0e.LeaderDetails\x1a\x13.ClientConfirmationB\tZ\a./protob\x06proto3"
+	"\x04Term\x18\x01 \x01(\x05R\x04Term2K\n" +
+	"\x10HeartbeatService\x127\n" +
+	"\x10ReceiveHeartbeat\x12\x0e.LeaderDetails\x1a\x13.ClientConfirmationB\tZ\a./protob\x06proto3"
 
 var (
 	file_proto_heartbeat_proto_rawDescOnce sync.Once
@@ -139,8 +139,8 @@ var file_proto_heartbeat_proto_goTypes = []any{
 	(*ClientConfirmation)(nil), // 1: ClientConfirmation
 }
 var file_proto_heartbeat_proto_depIdxs = []int32{
-	0, // 0: SendHeartbeat.RecieveHeartbeat:input_type -> LeaderDetails
-	1, // 1: SendHeartbeat.RecieveHeartbeat:output_type -> ClientConfirmation
+	0, // 0: HeartbeatService.ReceiveHeartbeat:input_type -> LeaderDetails
+	1, // 1: HeartbeatService.ReceiveHeartbeat:output_type -> ClientConfirmation
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

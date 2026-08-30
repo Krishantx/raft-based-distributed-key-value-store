@@ -19,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SendHeartbeat_RecieveHeartbeat_FullMethodName = "/SendHeartbeat/RecieveHeartbeat"
+	HeartbeatService_ReceiveHeartbeat_FullMethodName = "/HeartbeatService/ReceiveHeartbeat"
 )
 
-// SendHeartbeatClient is the client API for SendHeartbeat service.
+// HeartbeatServiceClient is the client API for HeartbeatService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SendHeartbeatClient interface {
-	RecieveHeartbeat(ctx context.Context, in *LeaderDetails, opts ...grpc.CallOption) (*ClientConfirmation, error)
+type HeartbeatServiceClient interface {
+	ReceiveHeartbeat(ctx context.Context, in *LeaderDetails, opts ...grpc.CallOption) (*ClientConfirmation, error)
 }
 
-type sendHeartbeatClient struct {
+type heartbeatServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSendHeartbeatClient(cc grpc.ClientConnInterface) SendHeartbeatClient {
-	return &sendHeartbeatClient{cc}
+func NewHeartbeatServiceClient(cc grpc.ClientConnInterface) HeartbeatServiceClient {
+	return &heartbeatServiceClient{cc}
 }
 
-func (c *sendHeartbeatClient) RecieveHeartbeat(ctx context.Context, in *LeaderDetails, opts ...grpc.CallOption) (*ClientConfirmation, error) {
+func (c *heartbeatServiceClient) ReceiveHeartbeat(ctx context.Context, in *LeaderDetails, opts ...grpc.CallOption) (*ClientConfirmation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ClientConfirmation)
-	err := c.cc.Invoke(ctx, SendHeartbeat_RecieveHeartbeat_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, HeartbeatService_ReceiveHeartbeat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// SendHeartbeatServer is the server API for SendHeartbeat service.
-// All implementations must embed UnimplementedSendHeartbeatServer
+// HeartbeatServiceServer is the server API for HeartbeatService service.
+// All implementations must embed UnimplementedHeartbeatServiceServer
 // for forward compatibility.
-type SendHeartbeatServer interface {
-	RecieveHeartbeat(context.Context, *LeaderDetails) (*ClientConfirmation, error)
-	mustEmbedUnimplementedSendHeartbeatServer()
+type HeartbeatServiceServer interface {
+	ReceiveHeartbeat(context.Context, *LeaderDetails) (*ClientConfirmation, error)
+	mustEmbedUnimplementedHeartbeatServiceServer()
 }
 
-// UnimplementedSendHeartbeatServer must be embedded to have
+// UnimplementedHeartbeatServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedSendHeartbeatServer struct{}
+type UnimplementedHeartbeatServiceServer struct{}
 
-func (UnimplementedSendHeartbeatServer) RecieveHeartbeat(context.Context, *LeaderDetails) (*ClientConfirmation, error) {
-	return nil, status.Error(codes.Unimplemented, "method RecieveHeartbeat not implemented")
+func (UnimplementedHeartbeatServiceServer) ReceiveHeartbeat(context.Context, *LeaderDetails) (*ClientConfirmation, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReceiveHeartbeat not implemented")
 }
-func (UnimplementedSendHeartbeatServer) mustEmbedUnimplementedSendHeartbeatServer() {}
-func (UnimplementedSendHeartbeatServer) testEmbeddedByValue()                       {}
+func (UnimplementedHeartbeatServiceServer) mustEmbedUnimplementedHeartbeatServiceServer() {}
+func (UnimplementedHeartbeatServiceServer) testEmbeddedByValue()                          {}
 
-// UnsafeSendHeartbeatServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SendHeartbeatServer will
+// UnsafeHeartbeatServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to HeartbeatServiceServer will
 // result in compilation errors.
-type UnsafeSendHeartbeatServer interface {
-	mustEmbedUnimplementedSendHeartbeatServer()
+type UnsafeHeartbeatServiceServer interface {
+	mustEmbedUnimplementedHeartbeatServiceServer()
 }
 
-func RegisterSendHeartbeatServer(s grpc.ServiceRegistrar, srv SendHeartbeatServer) {
-	// If the following call panics, it indicates UnimplementedSendHeartbeatServer was
+func RegisterHeartbeatServiceServer(s grpc.ServiceRegistrar, srv HeartbeatServiceServer) {
+	// If the following call panics, it indicates UnimplementedHeartbeatServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&SendHeartbeat_ServiceDesc, srv)
+	s.RegisterService(&HeartbeatService_ServiceDesc, srv)
 }
 
-func _SendHeartbeat_RecieveHeartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HeartbeatService_ReceiveHeartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LeaderDetails)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SendHeartbeatServer).RecieveHeartbeat(ctx, in)
+		return srv.(HeartbeatServiceServer).ReceiveHeartbeat(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SendHeartbeat_RecieveHeartbeat_FullMethodName,
+		FullMethod: HeartbeatService_ReceiveHeartbeat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SendHeartbeatServer).RecieveHeartbeat(ctx, req.(*LeaderDetails))
+		return srv.(HeartbeatServiceServer).ReceiveHeartbeat(ctx, req.(*LeaderDetails))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// SendHeartbeat_ServiceDesc is the grpc.ServiceDesc for SendHeartbeat service.
+// HeartbeatService_ServiceDesc is the grpc.ServiceDesc for HeartbeatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var SendHeartbeat_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "SendHeartbeat",
-	HandlerType: (*SendHeartbeatServer)(nil),
+var HeartbeatService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "HeartbeatService",
+	HandlerType: (*HeartbeatServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RecieveHeartbeat",
-			Handler:    _SendHeartbeat_RecieveHeartbeat_Handler,
+			MethodName: "ReceiveHeartbeat",
+			Handler:    _HeartbeatService_ReceiveHeartbeat_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"raft-based-kv/internal/controller"
+// "raft-based-kv/internal/controller"
 )
 
 func main() {
-	go controller.StartHTTPController()
+	// go controller.StartHTTPController()
 
 }

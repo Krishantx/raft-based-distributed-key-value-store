@@ -21,27 +21,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type LeaderDetails struct {
+type Leader struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	NodeName      string                 `protobuf:"bytes,1,opt,name=NodeName,proto3" json:"NodeName,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LeaderDetails) Reset() {
-	*x = LeaderDetails{}
+func (x *Leader) Reset() {
+	*x = Leader{}
 	mi := &file_proto_heartbeat_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LeaderDetails) String() string {
+func (x *Leader) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LeaderDetails) ProtoMessage() {}
+func (*Leader) ProtoMessage() {}
 
-func (x *LeaderDetails) ProtoReflect() protoreflect.Message {
+func (x *Leader) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_heartbeat_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,12 +53,12 @@ func (x *LeaderDetails) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LeaderDetails.ProtoReflect.Descriptor instead.
-func (*LeaderDetails) Descriptor() ([]byte, []int) {
+// Deprecated: Use Leader.ProtoReflect.Descriptor instead.
+func (*Leader) Descriptor() ([]byte, []int) {
 	return file_proto_heartbeat_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *LeaderDetails) GetNodeName() string {
+func (x *Leader) GetNodeName() string {
 	if x != nil {
 		return x.NodeName
 	}
@@ -113,13 +113,13 @@ var File_proto_heartbeat_proto protoreflect.FileDescriptor
 
 const file_proto_heartbeat_proto_rawDesc = "" +
 	"\n" +
-	"\x15proto/heartbeat.proto\"+\n" +
-	"\rLeaderDetails\x12\x1a\n" +
+	"\x15proto/heartbeat.proto\"$\n" +
+	"\x06Leader\x12\x1a\n" +
 	"\bNodeName\x18\x01 \x01(\tR\bNodeName\"(\n" +
 	"\x12ClientConfirmation\x12\x12\n" +
-	"\x04Term\x18\x01 \x01(\x05R\x04Term2K\n" +
-	"\x10HeartbeatService\x127\n" +
-	"\x10ReceiveHeartbeat\x12\x0e.LeaderDetails\x1a\x13.ClientConfirmationB\tZ\a./protob\x06proto3"
+	"\x04Term\x18\x01 \x01(\x05R\x04Term2D\n" +
+	"\x10HeartbeatService\x120\n" +
+	"\x10ReceiveHeartbeat\x12\a.Leader\x1a\x13.ClientConfirmationB\tZ\a./protob\x06proto3"
 
 var (
 	file_proto_heartbeat_proto_rawDescOnce sync.Once
@@ -135,11 +135,11 @@ func file_proto_heartbeat_proto_rawDescGZIP() []byte {
 
 var file_proto_heartbeat_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_heartbeat_proto_goTypes = []any{
-	(*LeaderDetails)(nil),      // 0: LeaderDetails
+	(*Leader)(nil),             // 0: Leader
 	(*ClientConfirmation)(nil), // 1: ClientConfirmation
 }
 var file_proto_heartbeat_proto_depIdxs = []int32{
-	0, // 0: HeartbeatService.ReceiveHeartbeat:input_type -> LeaderDetails
+	0, // 0: HeartbeatService.ReceiveHeartbeat:input_type -> Leader
 	1, // 1: HeartbeatService.ReceiveHeartbeat:output_type -> ClientConfirmation
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type

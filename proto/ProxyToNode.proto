@@ -1,0 +1,34 @@
+syntax="proto3";
+
+option go_package="./proto";
+
+service ProxyToNode {
+  rpc GetKeyValue(Key) returns (Response);
+  rpc AddKeyValue(KeyValue) returns (Response);
+  rpc DeleteKeyValue(Key) returns (Response);
+  rpc PutKeyValue(KeyValue) returns (Response);
+}
+
+message Response {
+  oneof result {
+    KeyValue KeyValue= 1;
+    LeaderDetails LeaderDetails = 2;
+  }
+}
+
+message LeaderDetails {
+  int32 Term = 1;
+  string LeaderName = 2;
+}
+
+message KeyValue {
+  int32 term = 1;
+  string Key = 2;
+  string Value = 3;
+}
+
+message Key {
+  int32 term = 1;
+  string Key = 2;
+}
+

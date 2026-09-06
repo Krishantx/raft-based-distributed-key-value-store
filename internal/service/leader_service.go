@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	// "fmt"
 	"log"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
@@ -39,7 +39,7 @@ func grpcClient(addr string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	req := &pb.LeaderDetails{NodeName: node_name}
+	req := &pb.Leader{NodeName: node_name}
 	response, err := client.ReceiveHeartbeat(ctx, req)
 
 	if err != nil {
@@ -47,9 +47,9 @@ func grpcClient(addr string) {
 	}
 
 	if int(response.Term) == term {
-		fmt.Println("The current Term is correct and I am still the leader")
+		// fmt.Println("The current Term is correct and I am still the leader")
 	} else {
-		fmt.Println("The term does not match and I am no longer the leader")
+		// fmt.Println("The term does not match and I am no longer the leader")
 	}
 }
 

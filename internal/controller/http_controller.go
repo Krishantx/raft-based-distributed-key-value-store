@@ -1,14 +1,11 @@
 package controller
 
-//
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"raft-based-kv/internal/service"
 )
-
-var mux *http.ServeMux
 
 type Controller struct {
 	proxyService service.ProxyService

@@ -12,14 +12,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type Follower_Service struct {
-	VotingTimeout int
-}
-
 func New_Follower_Service(VotingTimeout int) Follower_Service {
 	return Follower_Service{
 		VotingTimeout: VotingTimeout,
 	}
+}
+
+type Follower_Service struct {
+	VotingTimeout int
 }
 
 func (this *Follower_Service) StartFollowerService(config models.Config, ch chan bool, votingChan chan bool) {
@@ -31,10 +31,10 @@ func StartElectionTimer(config models.Config, ch chan bool) {
 	for {
 		select {
 		case <-timer.C:
-			fmt.Println("Timer expired starting voting procedure")
+			// fmt.Println("Timer expired starting voting procedure")
 			StartVoting()
 		case <-ch:
-			fmt.Println("Heartbeat Recieved Reset Timer")
+			// fmt.Println("Heartbeat Recieved Reset Timer")
 			timer.Reset(5 * time.Second)
 		}
 	}

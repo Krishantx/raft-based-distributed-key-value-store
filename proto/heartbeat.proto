@@ -1,7 +1,7 @@
 syntax = "proto3";
 option go_package = "./proto";
 
-message LeaderDetails {
+message Leader {
   string NodeName = 1;
 }
 message ClientConfirmation {
@@ -9,5 +9,5 @@ message ClientConfirmation {
 }
 
 service HeartbeatService{
-  rpc ReceiveHeartbeat(LeaderDetails) returns (ClientConfirmation);
+  rpc ReceiveHeartbeat(Leader) returns (ClientConfirmation);
 }

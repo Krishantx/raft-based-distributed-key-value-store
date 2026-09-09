@@ -1,14 +1,9 @@
 package main
 
 import (
-	controller "raft-based-kv/internal/controller"
-	"raft-based-kv/internal/models"
-	"raft-based-kv/internal/service"
+	controller "raft-based-kv/cmd/raft-aware-proxy/controller"
+	service "raft-based-kv/cmd/raft-aware-proxy/service"
 )
-
-type context struct {
-	leader models.Node
-}
 
 func main() {
 	proxyService := service.NewProxyService()

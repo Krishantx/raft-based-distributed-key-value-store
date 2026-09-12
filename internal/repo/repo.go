@@ -44,7 +44,7 @@ func (s *Repo) AddKeyValue(key string, value string) (models.KeyValue, error) {
 	}, nil
 }
 
-func (s *Repo) deleteKeyValue(key string) error {
+func (s *Repo) DeleteKeyValue(key string) error {
 	value := s.in_memory_db[key]
 
 	if value == "" {
@@ -55,7 +55,7 @@ func (s *Repo) deleteKeyValue(key string) error {
 	return nil
 }
 
-func (s *Repo) updateKeyValue(key string, value string) (models.KeyValue, error) {
+func (s *Repo) UpdateKeyValue(key string, value string) (models.KeyValue, error) {
 	checkValue := s.in_memory_db[key]
 
 	if checkValue == "" {

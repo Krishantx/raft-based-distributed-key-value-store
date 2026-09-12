@@ -63,13 +63,12 @@ func (s *HTTPController) addKeyValue(w http.ResponseWriter, req *http.Request) {
 func (s *HTTPController) putKeyValue(w http.ResponseWriter, req *http.Request) {
 	var payload models.KeyValue
 	err := json.NewDecoder(req.Body).Decode(&payload)
-	fmt.Println(payload)
 	if err != nil || payload.Key == "" || payload.Value == "" {
 		fmt.Printf("Error Decoding JSON: %s", err)
 		http.Error(w, "Incorrect Payload", http.StatusBadRequest)
 		return
 	}
-	keyValue := s.proxyService.PutKeyValue(payload)
+	keyValue, err := s.proxyService.PutKeyValue(payload)
 	json.NewEncoder(w).Encode(keyValue)
 }
 func (s *HTTPController) deleteKeyValue(w http.ResponseWriter, req *http.Request) {

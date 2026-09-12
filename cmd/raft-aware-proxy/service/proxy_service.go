@@ -67,7 +67,7 @@ func (p *ProxyService) DeleteKeyValue(key string) models.KeyValue {
 
 	req := &pb.Key{
 		Term: 1,
-		Key:  "Key",
+		Key:  key,
 	}
 
 	response, err := client.DeleteKeyValue(ctx, req)
@@ -77,7 +77,7 @@ func (p *ProxyService) DeleteKeyValue(key string) models.KeyValue {
 	}
 }
 
-func (p *ProxyService) PutKeyValue(keyValue models.KeyValue) models.KeyValue {
+func (p *ProxyService) PutKeyValue(keyValue models.KeyValue) (models.KeyValue, error) {
 	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
 	// Send a gRPC Request to the Leader
 
@@ -97,10 +97,13 @@ func (p *ProxyService) PutKeyValue(keyValue models.KeyValue) models.KeyValue {
 	}
 
 	response, err := client.PutKeyValue(ctx, req)
+	if err != nil {
+		return models.KeyValue{}, err
+	}
 	return models.KeyValue{
 		Key:   response.GetKeyValue().Key,
 		Value: response.GetKeyValue().Value,
-	}
+	}, nil
 }
 
 func (p *ProxyService) AddKeyValue(keyValue models.KeyValue) (models.KeyValue, error) {

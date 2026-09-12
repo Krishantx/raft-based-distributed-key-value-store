@@ -46,24 +46,31 @@ func (s *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, e
 }
 
 func (s *proxyServ) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	err := s.repository.DeleteKeyValue(req.Key)
+	if err != nil {
+		return &pb.Response{}, err
+	}
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
-				Term:  1,
-				Key:   "Key",
-				Value: "Value",
+				Term: 1,
+				Key:  req.Key,
 			},
 		},
 	}, nil
 }
 
 func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	keyValue, err := s.repository.UpdateKeyValue(req.Key, req.Value)
+	if err != nil {
+		return &pb.Response{}, err
+	}
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
 				Term:  1,
-				Key:   "Key",
-				Value: "Value",
+				Key:   keyValue.Key,
+				Value: keyValue.Value,
 			},
 		},
 	}, nil

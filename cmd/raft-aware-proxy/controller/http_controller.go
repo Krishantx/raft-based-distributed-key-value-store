@@ -18,8 +18,8 @@ func NewHTTPController(proxyService service.ProxyService) *HTTPController {
 		mux:          http.NewServeMux(),
 	}
 	http_controller.mux.HandleFunc("GET /{key}", http_controller.getKeyValue)
-	http_controller.mux.HandleFunc("POST /{key}", http_controller.addKeyValue)
-	http_controller.mux.HandleFunc("PUT /{key}", http_controller.putKeyValue)
+	http_controller.mux.HandleFunc("POST /", http_controller.addKeyValue)
+	http_controller.mux.HandleFunc("PUT /", http_controller.putKeyValue)
 	http_controller.mux.HandleFunc("DELETE /{key}", http_controller.deleteKeyValue)
 
 	return &http_controller
@@ -34,23 +34,22 @@ func (s *HTTPController) StartHTTPController() {
 }
 
 func (s *HTTPController) getKeyValue(w http.ResponseWriter, req *http.Request) {
+	key := req.URL.Path
+	fmt.Println(key)
 	keyValue := s.proxyService.GetKeyValue()
 	json.NewEncoder(w).Encode(keyValue)
 }
 
 func (s *HTTPController) addKeyValue(w http.ResponseWriter, req *http.Request) {
-	fmt.Printf("POST")
 	keyValue := s.proxyService.AddKeyValue()
 	json.NewEncoder(w).Encode(keyValue)
 }
 
 func (s *HTTPController) putKeyValue(w http.ResponseWriter, req *http.Request) {
-	fmt.Printf("PUT")
 	keyValue := s.proxyService.PutKeyValue()
 	json.NewEncoder(w).Encode(keyValue)
 }
 func (s *HTTPController) deleteKeyValue(w http.ResponseWriter, req *http.Request) {
-	fmt.Printf("DELETE")
 	keyValue := s.proxyService.DeleteKeyValue()
 	json.NewEncoder(w).Encode(keyValue)
 }

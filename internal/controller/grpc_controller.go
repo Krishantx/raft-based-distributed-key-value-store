@@ -40,6 +40,30 @@ func (s *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, e
 	}, nil
 }
 
+func (s *proxyServ) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	return &pb.Response{
+		Result: &pb.Response_KeyValue{
+			KeyValue: &pb.KeyValue{
+				Term:  1,
+				Key:   "Key",
+				Value: "Value",
+			},
+		},
+	}, nil
+}
+
+func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	return &pb.Response{
+		Result: &pb.Response_KeyValue{
+			KeyValue: &pb.KeyValue{
+				Term:  1,
+				Key:   "Key",
+				Value: "Value",
+			},
+		},
+	}, nil
+}
+
 func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{

@@ -26,7 +26,7 @@ func NewProxyService() ProxyService {
 	}
 }
 
-func (p *ProxyService) GetKeyValue(key string) models.KeyValue {
+func (p *ProxyService) GetKeyValue(key string) (models.KeyValue, error) {
 	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
 
 	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -44,10 +44,13 @@ func (p *ProxyService) GetKeyValue(key string) models.KeyValue {
 	}
 
 	response, err := client.GetKeyValue(ctx, req)
+	if err != nil {
+		return models.KeyValue{}, err
+	}
 	return models.KeyValue{
 		Key:   response.GetKeyValue().Key,
 		Value: response.GetKeyValue().Value,
-	}
+	}, nil
 }
 
 func (p *ProxyService) DeleteKeyValue(key string) models.KeyValue {

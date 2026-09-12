@@ -70,13 +70,16 @@ func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Resp
 }
 
 func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
-	fmt.Println(req.Key)
+	keyValue, err := s.repository.GetKeyValue(req.Key)
+	if err != nil {
+		return &pb.Response{}, err
+	}
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
 				Term:  1,
-				Key:   "abc",
-				Value: "cde",
+				Key:   keyValue.Key,
+				Value: keyValue.Value,
 			},
 		},
 	}, nil

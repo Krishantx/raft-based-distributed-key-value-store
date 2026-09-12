@@ -36,7 +36,11 @@ func (s *HTTPController) StartHTTPController() {
 
 func (s *HTTPController) getKeyValue(w http.ResponseWriter, req *http.Request) {
 	key := req.URL.Path[1:]
-	keyValue := s.proxyService.GetKeyValue(key)
+	keyValue, err := s.proxyService.GetKeyValue(key)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 	json.NewEncoder(w).Encode(keyValue)
 }
 

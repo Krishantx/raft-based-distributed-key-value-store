@@ -16,7 +16,7 @@ func NewRepository() *Repo {
 	return &newRepo
 }
 
-func (s *Repo) getKeyValue(key string) (models.KeyValue, error) {
+func (s *Repo) GetKeyValue(key string) (models.KeyValue, error) {
 
 	value := s.in_memory_db[key]
 

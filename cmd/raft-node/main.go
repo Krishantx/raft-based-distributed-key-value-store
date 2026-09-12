@@ -20,7 +20,7 @@ func main() {
 	var config = models.Config{}
 	setConfig(&config)
 	Repo := repository.NewRepository()
-	grpc_Server := controller.New_gRPC_Server(*Repo)
+	grpc_Server := controller.New_gRPC_Server(Repo)
 	go grpc_Server.StartgRpcController(config, channel, voteChan)
 
 	for {

@@ -18,9 +18,9 @@ type gRPC_Server struct {
 	repository repository.Repo
 }
 
-func New_gRPC_Server(repo repository.Repo) *gRPC_Server {
+func New_gRPC_Server(repo *repository.Repo) *gRPC_Server {
 	return &gRPC_Server{
-		repository: repo,
+		repository: *repo,
 	}
 }
 
@@ -116,7 +116,9 @@ func (s *gRPC_Server) StartgRpcController(config models.Config, ch chan bool, vo
 
 	pb.RegisterHeartbeatServiceServer(grpcServ, &server{})
 	pb.RegisterVotingServiceServer(grpcServ, &voting{})
-	pb.RegisterProxyToNodeServer(grpcServ, &proxyServ{})
+	pb.RegisterProxyToNodeServer(grpcServ, &proxyServ{
+		repository: s.repository,
+	})
 	fmt.Println("gRPC Listing on port: 50051")
 	err = grpcServ.Serve(lis)
 	if err != nil {

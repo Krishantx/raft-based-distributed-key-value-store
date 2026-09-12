@@ -48,7 +48,11 @@ func (s *HTTPController) addKeyValue(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Incorrect Payload", http.StatusBadRequest)
 		return
 	}
-	keyValue := s.proxyService.AddKeyValue(payload)
+	keyValue, err := s.proxyService.AddKeyValue(payload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
 	json.NewEncoder(w).Encode(keyValue)
 }
 

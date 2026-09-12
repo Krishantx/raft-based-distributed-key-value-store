@@ -25,8 +25,7 @@ func NewHTTPController(proxyService service.ProxyService) *HTTPController {
 	return &http_controller
 }
 
-func (s *HTTPController) StartHTTPController(proxyService service.ProxyService) {
-
+func (s *HTTPController) StartHTTPController() {
 	err := http.ListenAndServe(":8080", s.mux)
 	if err != nil {
 		fmt.Printf("Server Failed to Start: %s", err)

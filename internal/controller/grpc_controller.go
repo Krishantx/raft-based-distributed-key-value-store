@@ -41,7 +41,6 @@ func (s *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, e
 }
 
 func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
-	fmt.Println("Request recieved for Key : " + req.Key)
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
@@ -52,7 +51,17 @@ func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response,
 		},
 	}, nil
 }
-
+func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	return &pb.Response{
+		Result: &pb.Response_KeyValue{
+			KeyValue: &pb.KeyValue{
+				Term:  1,
+				Key:   "Key",
+				Value: "Value",
+			},
+		},
+	}, nil
+}
 func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.ClientConfirmation, error) {
 	// fmt.Println("Heartbeat Recieved")
 	channel <- true

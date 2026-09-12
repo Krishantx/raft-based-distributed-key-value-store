@@ -28,11 +28,8 @@ func NewProxyService() ProxyService {
 }
 
 func (p *ProxyService) GetKeyValue() models.KeyValue {
-	// Now use gRPC to send this get request to the Leader(Or who we belive is the leader)
-	// First we fetch who we think the leader is
 	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
 	// Send a gRPC Request to the Leader
-	fmt.Println(leaderAddr)
 
 	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -49,12 +46,9 @@ func (p *ProxyService) GetKeyValue() models.KeyValue {
 	}
 
 	response, err := client.GetKeyValue(ctx, req)
-
-	fmt.Println(response)
-
 	return models.KeyValue{
-		Key:   "This is a random Key",
-		Value: "This is a random value",
+		Key:   response.GetKeyValue().Key,
+		Value: response.GetKeyValue().Value,
 	}
 }
 
@@ -73,9 +67,27 @@ func (p *ProxyService) DeleteKeyValue() models.KeyValue {
 	}
 }
 func (p *ProxyService) AddKeyValue() models.KeyValue {
-	fmt.Printf("Hello World")
+	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
+	// Send a gRPC Request to the Leader
+
+	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect : %s: %v", &leaderAddr, err)
+	}
+
+	client := pb.NewProxyToNodeClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	req := &pb.KeyValue{
+		Term:  1,
+		Key:   "key",
+		Value: "value",
+	}
+
+	response, err := client.AddKeyValue(ctx, req)
 	return models.KeyValue{
-		Key:   "This is a random Key",
-		Value: "This is a random value",
+		Key:   response.GetKeyValue().Key,
+		Value: response.GetKeyValue().Value,
 	}
 }

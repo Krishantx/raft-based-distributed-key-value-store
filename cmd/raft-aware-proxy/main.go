@@ -8,7 +8,7 @@ import (
 func main() {
 	proxyService := service.NewProxyService()
 	httpController := controller.NewHTTPController(proxyService)
-	go httpController.StartHTTPController(proxyService)
+	go httpController.StartHTTPController()
 
 	select {}
 }

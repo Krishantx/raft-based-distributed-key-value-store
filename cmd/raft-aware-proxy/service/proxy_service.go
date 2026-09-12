@@ -74,7 +74,7 @@ func (p *ProxyService) DeleteKeyValue(key string) models.KeyValue {
 	}
 }
 
-func (p *ProxyService) PutKeyValue() models.KeyValue {
+func (p *ProxyService) PutKeyValue(keyValue models.KeyValue) models.KeyValue {
 	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
 	// Send a gRPC Request to the Leader
 
@@ -89,8 +89,8 @@ func (p *ProxyService) PutKeyValue() models.KeyValue {
 
 	req := &pb.KeyValue{
 		Term:  1,
-		Key:   "key",
-		Value: "Value",
+		Key:   keyValue.Key,
+		Value: keyValue.Value,
 	}
 
 	response, err := client.PutKeyValue(ctx, req)
@@ -100,13 +100,13 @@ func (p *ProxyService) PutKeyValue() models.KeyValue {
 	}
 }
 
-func (p *ProxyService) AddKeyValue() models.KeyValue {
+func (p *ProxyService) AddKeyValue(keyValue models.KeyValue) models.KeyValue {
 	leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
 	// Send a gRPC Request to the Leader
 
 	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", &leaderAddr, err)
+		log.Fatalf("Failed to connect : %s: %v", leaderAddr, err)
 	}
 
 	client := pb.NewProxyToNodeClient(conn)
@@ -115,8 +115,8 @@ func (p *ProxyService) AddKeyValue() models.KeyValue {
 
 	req := &pb.KeyValue{
 		Term:  1,
-		Key:   "key",
-		Value: "value",
+		Key:   keyValue.Key,
+		Value: keyValue.Value,
 	}
 
 	response, err := client.AddKeyValue(ctx, req)

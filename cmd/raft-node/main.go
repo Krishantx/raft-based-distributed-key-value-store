@@ -5,6 +5,7 @@ import (
 	"os"
 	controller "raft-based-kv/internal/controller"
 	models "raft-based-kv/internal/models"
+	repository "raft-based-kv/internal/repo"
 	"raft-based-kv/internal/service"
 	"strconv"
 	"strings"
@@ -18,8 +19,8 @@ func main() {
 	channel := make(chan bool, 2)
 	var config = models.Config{}
 	setConfig(&config)
-
-	grpc_Server := controller.New_gRPC_Server()
+	Repo := repository.NewRepository()
+	grpc_Server := controller.New_gRPC_Server(*Repo)
 	go grpc_Server.StartgRpcController(config, channel, voteChan)
 
 	for {

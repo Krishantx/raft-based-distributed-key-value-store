@@ -5,19 +5,23 @@ import (
 	"fmt"
 	"log"
 	"net"
+	models "raft-based-kv/internal/models"
+	repository "raft-based-kv/internal/repo"
+	pb "raft-based-kv/proto"
 
 	"google.golang.org/grpc"
-	models "raft-based-kv/internal/models"
-	pb "raft-based-kv/proto"
 )
 
 var channel chan bool
 
 type gRPC_Server struct {
+	repository repository.Repo
 }
 
-func New_gRPC_Server() *gRPC_Server {
-	return &gRPC_Server{}
+func New_gRPC_Server(repo repository.Repo) *gRPC_Server {
+	return &gRPC_Server{
+		repository: repo,
+	}
 }
 
 type server struct {
@@ -26,6 +30,7 @@ type server struct {
 
 type proxyServ struct {
 	pb.UnimplementedProxyToNodeServer
+	repository repository.Repo
 }
 
 type voting struct {
@@ -77,12 +82,16 @@ func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response,
 	}, nil
 }
 func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
+	if err != nil {
+		return &pb.Response{}, err
+	}
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
 				Term:  1,
-				Key:   "Key",
-				Value: "Value",
+				Key:   keyValue.Key,
+				Value: keyValue.Value,
 			},
 		},
 	}, nil

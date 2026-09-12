@@ -2,6 +2,9 @@ FROM golang:1.26.5 AS builder
 
 WORKDIR /app
 
+COPY go.mod go.sum ./
+
+RUN go mod download
 COPY . .
 
 RUN go build -o raft-node ./cmd/raft-node

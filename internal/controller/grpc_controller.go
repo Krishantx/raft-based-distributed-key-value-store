@@ -65,6 +65,7 @@ func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Resp
 }
 
 func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	fmt.Println(req.Key)
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{

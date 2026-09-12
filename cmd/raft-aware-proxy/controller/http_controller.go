@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	service "raft-based-kv/cmd/raft-aware-proxy/service"
+	"raft-based-kv/internal/models"
 )
 
 type HTTPController struct {
@@ -34,9 +35,8 @@ func (s *HTTPController) StartHTTPController() {
 }
 
 func (s *HTTPController) getKeyValue(w http.ResponseWriter, req *http.Request) {
-	key := req.URL.Path
-	fmt.Println(key)
-	keyValue := s.proxyService.GetKeyValue()
+	key := req.URL.Path[1:]
+	keyValue := s.proxyService.GetKeyValue(key)
 	json.NewEncoder(w).Encode(keyValue)
 }
 
@@ -46,10 +46,18 @@ func (s *HTTPController) addKeyValue(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *HTTPController) putKeyValue(w http.ResponseWriter, req *http.Request) {
+	var payload models.KeyValue
+
+	err := json.NewDecoder(req.Body).Decode(&payload)
+	if err == nil {
+		fmt.Printf("Error Decoding JSON: %s", err)
+		http.Error(w, "Incorrect Payload", http.StatusBadRequest)
+	}
 	keyValue := s.proxyService.PutKeyValue()
 	json.NewEncoder(w).Encode(keyValue)
 }
 func (s *HTTPController) deleteKeyValue(w http.ResponseWriter, req *http.Request) {
-	keyValue := s.proxyService.DeleteKeyValue()
+	key := req.URL.Path[1:]
+	keyValue := s.proxyService.DeleteKeyValue(key)
 	json.NewEncoder(w).Encode(keyValue)
 }

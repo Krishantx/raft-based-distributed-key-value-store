@@ -12,8 +12,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var channel chan bool
-
 type gRPC_Server struct {
 	repository repository.Repo
 }
@@ -107,16 +105,12 @@ func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Resp
 	}, nil
 }
 func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.ClientConfirmation, error) {
-	// fmt.Println("Heartbeat Recieved")
-	channel <- true
+	fmt.Println("Heartbeat Recieved")
 	return &pb.ClientConfirmation{
 		Term: 1,
 	}, nil
 }
-func (s *gRPC_Server) StartgRpcController(config models.Config, ch chan bool, voteChan chan bool) {
-
-	channel = ch
-
+func (s *gRPC_Server) StartgRpcController(config models.Config) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatal(err)

@@ -15,25 +15,25 @@ var Term = 1
 var Log = 1
 
 func main() {
-	voteChan := make(chan bool, 1)
-	channel := make(chan bool, 2)
-	var config = models.Config{}
-	setConfig(&config)
+	config := setConfig()
 	Repo := repository.NewRepository()
 	grpc_Server := controller.New_gRPC_Server(Repo)
-	go grpc_Server.StartgRpcController(config, channel, voteChan)
+	go grpc_Server.StartgRpcController(config)
 
 	for {
 		if config.Role == "follower" {
 			follower_service := service.New_Follower_Service(20)
-			follower_service.StartFollowerService(config, channel, voteChan)
+			follower_service.StartFollowerService(config)
 		} else {
-			service.StartLeaderService(config, channel)
+			leader_service := service.NewLeaderService(config)
+			leader_service.StartLeaderService()
 		}
 	}
 }
 
-func setConfig(config *models.Config) {
+func setConfig() models.Config {
+	config := models.Config{}
+
 	config.NodeName = os.Getenv("node_name")
 	t := os.Getenv("election_time")
 	fmt.Println("ElectionTime :" + t)
@@ -44,4 +44,5 @@ func setConfig(config *models.Config) {
 	config.ElectionTime = time
 	config.Role = os.Getenv("role")
 	config.Follower = strings.Split(os.Getenv("followers"), ",")
+	return config
 }

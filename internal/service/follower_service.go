@@ -22,24 +22,23 @@ type Follower_Service struct {
 	VotingTimeout int
 }
 
-func (this *Follower_Service) StartFollowerService(config models.Config, ch chan bool, votingChan chan bool) {
-	StartElectionTimer(config, ch)
+func (this *Follower_Service) StartFollowerService(config models.Config) {
+	// StartElectionTimer(config)
 }
 
-func StartElectionTimer(config models.Config, ch chan bool) {
-	timer := time.NewTimer(5 * time.Second)
-	for {
-		select {
-		case <-timer.C:
-			// fmt.Println("Timer expired starting voting procedure")
-			StartVoting()
-		case <-ch:
-			// fmt.Println("Heartbeat Recieved Reset Timer")
-			timer.Reset(5 * time.Second)
-		}
-	}
-}
-
+//	func StartElectionTimer(config models.Config) {
+//		timer := time.NewTimer(5 * time.Second)
+//		for {
+//			select {
+//			case <-timer.C:
+//				// fmt.Println("Timer expired starting voting procedure")
+//				StartVoting()
+//			case <-ch:
+//				// fmt.Println("Heartbeat Recieved Reset Timer")
+//				timer.Reset(5 * time.Second)
+//			}
+//		}
+//	}
 func grpcClientForVoting(addr string) {
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -51,9 +50,9 @@ func grpcClientForVoting(addr string) {
 	defer cancel()
 
 	req := &pb.NodeInfo{
-		Term:     1,
-		Log:      1,
-		NodeName: conf.NodeName,
+		Term: 1,
+		Log:  1,
+		// NodeName: conf.NodeName,
 	}
 	response, err := client.StartVoting(ctx, req)
 

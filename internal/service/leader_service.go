@@ -14,22 +14,29 @@ import (
 
 // Send Heartbeat every 100ms
 
-var node_name string
-var term int
-var conf models.Config
+type LeaderService struct {
+	node_name string
+	term      int
+	conf      models.Config
+}
 
-func StartLeaderService(config models.Config, channel chan bool) {
-	term = 1
-	node_name = config.NodeName
-	conf = config
-	ticker := time.NewTicker(3 * time.Second)
-	for {
-		<-ticker.C
-		SendHeartbeat(channel)
+func NewLeaderService(config models.Config) LeaderService {
+	return LeaderService{
+		node_name: config.NodeName,
+		term:      1,
+		conf:      config,
 	}
 }
 
-func grpcClient(addr string) {
+func (s *LeaderService) StartLeaderService() {
+	ticker := time.NewTicker(1 * time.Second)
+	for {
+		<-ticker.C
+		s.SendHeartbeat()
+	}
+}
+
+func (this *LeaderService) grpcClient(addr string) {
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect : %s: %v", addr, err)
@@ -39,23 +46,23 @@ func grpcClient(addr string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	req := &pb.Leader{NodeName: node_name}
+	req := &pb.Leader{NodeName: this.node_name}
 	response, err := client.ReceiveHeartbeat(ctx, req)
 
 	if err != nil {
 		log.Fatalf("Error Sending Heartbear %s : %v", addr, err)
 	}
 
-	if int(response.Term) == term {
+	if int(response.Term) == this.term {
 		// fmt.Println("The current Term is correct and I am still the leader")
 	} else {
 		// fmt.Println("The term does not match and I am no longer the leader")
 	}
 }
 
-func SendHeartbeat(channel chan bool) {
-	for i := 0; i < len(conf.Follower); i++ {
-		addr := conf.Follower[i] + ":50051"
-		grpcClient(addr)
+func (this *LeaderService) SendHeartbeat() {
+	for i := 0; i < len(this.conf.Follower); i++ {
+		addr := this.conf.Follower[i] + ":50051"
+		this.grpcClient(addr)
 	}
 }

@@ -11,9 +11,6 @@ import (
 	"strings"
 )
 
-var Term = 1
-var Log = 1
-
 func main() {
 	config := setConfig()
 	Repo := repository.NewRepository()
@@ -21,12 +18,15 @@ func main() {
 	go grpc_Server.StartgRpcController(config)
 
 	for {
-		if config.Role == "follower" {
+		if config.Role == models.Follower {
 			follower_service := service.New_Follower_Service(20)
 			follower_service.StartFollowerService(config)
-		} else {
+		} else if config.Role == models.Leader {
 			leader_service := service.NewLeaderService(config)
 			leader_service.StartLeaderService()
+		} else if config.Role == models.Candidate {
+			candidateService := service.NewCandidateService()
+			candidateService.StartCandidateService()
 		}
 	}
 }
@@ -42,7 +42,7 @@ func setConfig() models.Config {
 		fmt.Printf("Cannot parse Election Time: %s", err)
 	}
 	config.ElectionTime = time
-	config.Role = os.Getenv("role")
+	config.Role = models.Follower
 	config.Follower = strings.Split(os.Getenv("followers"), ",")
 	return config
 }

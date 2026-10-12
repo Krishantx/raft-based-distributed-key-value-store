@@ -23,22 +23,23 @@ type Follower_Service struct {
 }
 
 func (this *Follower_Service) StartFollowerService(config models.Config) {
-	// StartElectionTimer(config)
+	this.StartElectionTimer(config)
 }
 
-//	func StartElectionTimer(config models.Config) {
-//		timer := time.NewTimer(5 * time.Second)
-//		for {
-//			select {
-//			case <-timer.C:
-//				// fmt.Println("Timer expired starting voting procedure")
-//				StartVoting()
-//			case <-ch:
-//				// fmt.Println("Heartbeat Recieved Reset Timer")
-//				timer.Reset(5 * time.Second)
-//			}
-//		}
-//	}
+func (this *Follower_Service) StartElectionTimer(config models.Config) {
+	timer := time.NewTimer(5 * time.Second)
+	for {
+		select {
+		case <-timer.C:
+			fmt.Println("Timer expired starting voting procedure")
+			// StartVoting()
+			break
+			// case <-ch:
+			fmt.Println("Heartbeat Recieved Reset Timer")
+			timer.Reset(5 * time.Second)
+		}
+	}
+}
 func grpcClientForVoting(addr string) {
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

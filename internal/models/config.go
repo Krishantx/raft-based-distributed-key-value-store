@@ -4,6 +4,6 @@ package models
 type Config struct {
 	NodeName     string
 	ElectionTime int
-	Role         string
+	Role         Role
 	Follower     []string
 }

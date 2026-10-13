@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	// On boot up Load up all the logs from a deterministic database
 	config := setConfig()
 	Repo := repository.NewRepository()
 	grpc_Server := controller.New_gRPC_Server(Repo)

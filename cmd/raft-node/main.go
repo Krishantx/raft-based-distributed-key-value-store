@@ -6,7 +6,7 @@ import (
 	controller "raft-based-kv/internal/controller"
 	models "raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
-	"raft-based-kv/internal/service"
+	service "raft-based-kv/internal/service"
 	"strconv"
 	"strings"
 )
@@ -14,20 +14,26 @@ import (
 func main() {
 	// On boot up Load up all the logs from a deterministic database
 	config := setConfig()
+	nodeRaftData := models.NodeRaftData{}
+	nodeRaftData.Init()
 	Repo := repository.NewRepository()
-	grpc_Server := controller.New_gRPC_Server(Repo)
+	grpc_Server := controller.New_gRPC_Server(Repo, &nodeRaftData)
 	go grpc_Server.StartgRpcController(config)
 
 	for {
+		// Based on the role of the Node we have specific behaviours
 		if config.Role == models.Follower {
-			follower_service := service.New_Follower_Service(20)
-			follower_service.StartFollowerService(config)
+			// If the role of the Node is Follower. Start the follower service
+			follower_service := service.New_Follower_Service(20, &config)
+			follower_service.StartFollowerService()
 		} else if config.Role == models.Leader {
+			//If the role of the Node is Leader. Start the Leader Service
 			leader_service := service.NewLeaderService(config)
 			leader_service.StartLeaderService()
 		} else if config.Role == models.Candidate {
+			// If the role of the Node is Candidate. Start the follower service
 			candidateService := service.NewCandidateService()
-			candidateService.StartCandidateService()
+			candidateService.StartCandidateService(&nodeRaftData)
 		}
 	}
 }

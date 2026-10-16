@@ -8,35 +8,40 @@ import (
 	pb "raft-based-kv/proto"
 	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	grpc "google.golang.org/grpc"
+	insecure "google.golang.org/grpc/credentials/insecure"
 )
 
-func New_Follower_Service(VotingTimeout int) Follower_Service {
+func New_Follower_Service(VotingTimeout int, config *models.Config) Follower_Service {
+
 	return Follower_Service{
 		VotingTimeout: VotingTimeout,
+		config:        config,
 	}
 }
 
 type Follower_Service struct {
 	VotingTimeout int
+	config        *models.Config
 }
 
-func (this *Follower_Service) StartFollowerService(config models.Config) {
-	this.StartElectionTimer(config)
+func (this *Follower_Service) StartFollowerService() {
+	this.StartElectionTimer()
 }
 
-func (this *Follower_Service) StartElectionTimer(config models.Config) {
+func (this *Follower_Service) StartElectionTimer() {
+	fmt.Println("Election Timer Started")
 	timer := time.NewTimer(5 * time.Second)
-	for {
+	for this.config.Role == models.Follower {
 		select {
+		//case 1: Leader did not send a Heartbeat, start voting.
 		case <-timer.C:
-			fmt.Println("Timer expired starting voting procedure")
-			// StartVoting()
+			fmt.Println("Timer expired: Changing role to candidate")
+			this.config.Role = models.Candidate
 			break
 			// case <-ch:
-			fmt.Println("Heartbeat Recieved Reset Timer")
-			timer.Reset(5 * time.Second)
+			// fmt.Println("Heartbeat Recieved Reset Timer")
+			// timer.Reset(5 * time.Second)
 		}
 	}
 }
@@ -61,11 +66,4 @@ func grpcClientForVoting(addr string) {
 		log.Fatalf("Error Sending Heartbear %s : %v", addr, err)
 	}
 	fmt.Print(response)
-}
-
-func StartVoting() {
-	nodes := [...]string{"raft-node-1", "raft-node-2", "raft-node-3", "raft-node-4", "raft-node-5"}
-	for i := range len(nodes) {
-		grpcClientForVoting(nodes[i] + ":50051")
-	}
 }

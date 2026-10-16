@@ -14,11 +14,13 @@ import (
 
 type gRPC_Server struct {
 	repository repository.Repo
+	nodeRaftData *models.NodeRaftData
 }
 
-func New_gRPC_Server(repo *repository.Repo) *gRPC_Server {
+func New_gRPC_Server(repo *repository.Repo, NodeRaftData *models.NodeRaftData) *gRPC_Server {
 	return &gRPC_Server{
 		repository: *repo,
+		nodeRaftData: models.NodeRaftData,
 	}
 }
 
@@ -35,9 +37,9 @@ type voting struct {
 	pb.UnimplementedVotingServiceServer
 }
 
-func (s *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
+func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
 	fmt.Println("Starting Voting procedure")
-
+	if req.Term < this.nodeRaftData 
 	return &pb.Vote{
 		Vote: false,
 	}, nil
@@ -89,6 +91,7 @@ func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response,
 		},
 	}, nil
 }
+
 func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {

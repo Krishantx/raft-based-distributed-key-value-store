@@ -5,8 +5,6 @@ services:
     build: 
       context: .
       dockerfile: ./docker/Dockerfile.node
-    ports:
-      - 50051:50051
     environment:
         node_name: A
         role: leader

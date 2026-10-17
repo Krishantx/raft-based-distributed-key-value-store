@@ -13,14 +13,14 @@ import (
 )
 
 type gRPC_Server struct {
-	repository repository.Repo
+	repository   repository.Repo
 	nodeRaftData *models.NodeRaftData
 }
 
 func New_gRPC_Server(repo *repository.Repo, NodeRaftData *models.NodeRaftData) *gRPC_Server {
 	return &gRPC_Server{
-		repository: *repo,
-		nodeRaftData: models.NodeRaftData,
+		repository:   *repo,
+		nodeRaftData: NodeRaftData,
 	}
 }
 
@@ -35,13 +35,25 @@ type proxyServ struct {
 
 type voting struct {
 	pb.UnimplementedVotingServiceServer
+	nodeRaftData models.NodeRaftData
 }
 
 func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
 	fmt.Println("Starting Voting procedure")
-	if req.Term < this.nodeRaftData 
+	if req.Term < int32(this.nodeRaftData.GetTerm()) {
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+
+	if req.Log < int32(this.nodeRaftData.GetIndex()) {
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+
 	return &pb.Vote{
-		Vote: false,
+		Vote: true,
 	}, nil
 }
 
@@ -122,7 +134,9 @@ func (s *gRPC_Server) StartgRpcController(config models.Config) {
 	grpcServ := grpc.NewServer()
 
 	pb.RegisterHeartbeatServiceServer(grpcServ, &server{})
-	pb.RegisterVotingServiceServer(grpcServ, &voting{})
+	pb.RegisterVotingServiceServer(grpcServ, &voting{
+		nodeRaftData: *s.nodeRaftData,
+	})
 	pb.RegisterProxyToNodeServer(grpcServ, &proxyServ{
 		repository: s.repository,
 	})

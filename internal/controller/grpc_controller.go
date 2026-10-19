@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"raft-based-kv/internal/enums"
 	models "raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
@@ -15,12 +16,14 @@ import (
 type gRPC_Server struct {
 	repository   repository.Repo
 	nodeRaftData *models.NodeRaftData
+	timerOps     chan enums.TimerOperations
 }
 
-func New_gRPC_Server(repo *repository.Repo, NodeRaftData *models.NodeRaftData) *gRPC_Server {
+func New_gRPC_Server(repo *repository.Repo, NodeRaftData *models.NodeRaftData, timerOps chan enums.TimerOperations) *gRPC_Server {
 	return &gRPC_Server{
 		repository:   *repo,
 		nodeRaftData: NodeRaftData,
+		timerOps:     timerOps,
 	}
 }
 
@@ -36,10 +39,14 @@ type proxyServ struct {
 type voting struct {
 	pb.UnimplementedVotingServiceServer
 	nodeRaftData models.NodeRaftData
+	timerOps     chan enums.TimerOperations
 }
 
 func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
 	fmt.Println("Starting Voting procedure")
+	// Have a channel that lets the follower service know to stop the heartbeat timer.
+	// That way the follower service have maintain the ownership of the heartbeat timer.
+	this.timerOps <- enums.STOP
 	if req.Term < int32(this.nodeRaftData.GetTerm()) {
 		return &pb.Vote{
 			Vote: false,
@@ -136,6 +143,7 @@ func (s *gRPC_Server) StartgRpcController(config models.Config) {
 	pb.RegisterHeartbeatServiceServer(grpcServ, &server{})
 	pb.RegisterVotingServiceServer(grpcServ, &voting{
 		nodeRaftData: *s.nodeRaftData,
+		timerOps:     s.timerOps,
 	})
 	pb.RegisterProxyToNodeServer(grpcServ, &proxyServ{
 		repository: s.repository,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"raft-based-kv/internal/clients"
+	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 )
@@ -37,6 +38,7 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 
 	//Gather Votes
 	for i := 0; i < 5; i++ {
+		nodeRaftData.IncrementTerm()
 		grpcClient := grpcClinetList.GetClienyByIndex(i)
 		res, err := grpcClient.GetClinet().StartVoting(grpcClient.GetContext(), req)
 		if err != nil {
@@ -55,12 +57,11 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 	if voteCount > 2 {
 		// Become Leader
 		fmt.Println("Became Leader")
-		nodeRaftData.IncrementTerm()
-		this.config.Role = models.Leader
+		this.config.Role = enums.Leader
 	} else {
 		// Become Follower
 		fmt.Println("Become Follower")
-		this.config.Role = models.Follower
+		this.config.Role = enums.Follower
 	}
 
 }

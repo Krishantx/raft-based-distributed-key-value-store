@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
@@ -12,17 +13,19 @@ import (
 	insecure "google.golang.org/grpc/credentials/insecure"
 )
 
-func New_Follower_Service(VotingTimeout int, config *models.Config) Follower_Service {
+func New_Follower_Service(VotingTimeout int, config *models.Config, timerOps chan enums.TimerOperations) Follower_Service {
 
 	return Follower_Service{
 		VotingTimeout: VotingTimeout,
 		config:        config,
+		timerOps:      timerOps,
 	}
 }
 
 type Follower_Service struct {
 	VotingTimeout int
 	config        *models.Config
+	timerOps      chan enums.TimerOperations
 }
 
 func (this *Follower_Service) StartFollowerService() {
@@ -31,14 +34,22 @@ func (this *Follower_Service) StartFollowerService() {
 
 func (this *Follower_Service) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
-	timer := time.NewTimer(5 * time.Second)
-	for this.config.Role == models.Follower {
+	duration := 5 * time.Second
+	timer := time.NewTimer(duration)
+	for this.config.Role == enums.Follower {
 		select {
 		//case 1: Leader did not send a Heartbeat, start voting.
 		case <-timer.C:
 			fmt.Println("Timer expired: Changing role to candidate")
-			this.config.Role = models.Candidate
+			this.config.Role = enums.Candidate
 			break
+
+		case a := <-this.timerOps:
+			if a == enums.STOP {
+				timer.Stop()
+			} else if a == enums.RESET {
+				timer.Reset(duration)
+			}
 			// case <-ch:
 			// fmt.Println("Heartbeat Recieved Reset Timer")
 			// timer.Reset(5 * time.Second)

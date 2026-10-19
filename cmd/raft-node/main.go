@@ -5,6 +5,7 @@ import (
 	"os"
 	"raft-based-kv/internal/clients"
 	controller "raft-based-kv/internal/controller"
+	"raft-based-kv/internal/enums"
 	models "raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	service "raft-based-kv/internal/service"
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+	TimerOps := make(chan enums.TimerOperations)
+
 	grpcClients := clients.GRPCClientList{}
 	grpcClients.ConnectAllNodes()
 
@@ -24,21 +27,20 @@ func main() {
 
 	Repo := repository.NewRepository()
 
-	grpc_Server := controller.New_gRPC_Server(Repo, &nodeRaftData)
-
+	grpc_Server := controller.New_gRPC_Server(Repo, &nodeRaftData, TimerOps)
 	go grpc_Server.StartgRpcController(config)
 
 	for {
 		// Based on the role of the Node we have specific behaviours
-		if config.Role == models.Follower {
+		if config.Role == enums.Follower {
 			// If the role of the Node is Follower. Start the follower service
-			follower_service := service.New_Follower_Service(20, &config)
+			follower_service := service.New_Follower_Service(20, &config, TimerOps)
 			follower_service.StartFollowerService()
-		} else if config.Role == models.Leader {
+		} else if config.Role == enums.Leader {
 			//If the role of the Node is Leader. Start the Leader Service
 			leader_service := service.NewLeaderService(config)
 			leader_service.StartLeaderService()
-		} else if config.Role == models.Candidate {
+		} else if config.Role == enums.Candidate {
 			// If the role of the Node is Candidate. Start the follower service
 			candidateService := service.NewCandidateService(grpcClients, &config)
 			candidateService.StartCandidateService(&nodeRaftData)
@@ -57,7 +59,7 @@ func setConfig() models.Config {
 		fmt.Printf("Cannot parse Election Time: %s", err)
 	}
 	config.ElectionTime = time
-	config.Role = models.Follower
+	config.Role = enums.Follower
 	config.Follower = strings.Split(os.Getenv("followers"), ",")
 	return config
 }

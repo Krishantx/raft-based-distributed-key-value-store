@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"raft-based-kv/internal/clients"
 	controller "raft-based-kv/internal/controller"
 	models "raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
@@ -12,12 +13,19 @@ import (
 )
 
 func main() {
-	// On boot up Load up all the logs from a deterministic database
+	grpcClients := clients.GRPCClientList{}
+	grpcClients.ConnectAllNodes()
+
 	config := setConfig()
+
 	nodeRaftData := models.NodeRaftData{}
+
 	nodeRaftData.Init()
+
 	Repo := repository.NewRepository()
+
 	grpc_Server := controller.New_gRPC_Server(Repo, &nodeRaftData)
+
 	go grpc_Server.StartgRpcController(config)
 
 	for {
@@ -32,7 +40,7 @@ func main() {
 			leader_service.StartLeaderService()
 		} else if config.Role == models.Candidate {
 			// If the role of the Node is Candidate. Start the follower service
-			candidateService := service.NewCandidateService()
+			candidateService := service.NewCandidateService(grpcClients, &config)
 			candidateService.StartCandidateService(&nodeRaftData)
 		}
 	}

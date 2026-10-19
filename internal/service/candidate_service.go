@@ -1,22 +1,23 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"raft-based-kv/internal/clients"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type CandidateService struct {
+	grpcClients clients.GRPCClientList
+	config      *models.Config
 }
 
-func NewCandidateService() CandidateService {
-	return CandidateService{}
+func NewCandidateService(grpcClients clients.GRPCClientList, config *models.Config) CandidateService {
+	return CandidateService{
+		grpcClients: grpcClients,
+		config:      config,
+	}
 }
 
 func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaftData) {
@@ -27,24 +28,39 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		Term: int32(nodeRaftData.GetTerm()),
 		Log:  int32(nodeRaftData.GetIndex()),
 	}
-	client, ctx, _ := createGrpcClinet("raft-node-1:80081")
-	response, err := client.StartVoting(ctx, req)
 
-	if err != nil {
-		log.Fatalf("Error Sending Heartbear %s : %v", "raft-node-1", err)
+	grpcClinetList := clients.GRPCClientList{}
+
+	grpcClinetList.ConnectAllNodes()
+
+	voteResponse := [5]pb.Vote{}
+
+	//Gather Votes
+	for i := 0; i < 5; i++ {
+		grpcClient := grpcClinetList.GetClienyByIndex(i)
+		res, err := grpcClient.GetClinet().StartVoting(grpcClient.GetContext(), req)
+		if err != nil {
+			log.Panic("Error Sending gRPC Request", err)
+		}
+		voteResponse[i] = *res
 	}
-	fmt.Print(response)
-}
-
-func createGrpcClinet(addr string) (pb.VotingServiceClient, context.Context, context.CancelFunc) {
-
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
+	// Count Votes and Become Leader if majority voted for you
+	voteCount := 0
+	for i := 0; i < 5; i++ {
+		if voteResponse[i].Vote == true {
+			voteCount++
+		}
 	}
 
-	client := pb.NewVotingServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	if voteCount > 2 {
+		// Become Leader
+		fmt.Println("Became Leader")
+		nodeRaftData.IncrementTerm()
+		this.config.Role = models.Leader
+	} else {
+		// Become Follower
+		fmt.Println("Become Follower")
+		this.config.Role = models.Follower
+	}
 
-	return client, ctx, cancel
 }

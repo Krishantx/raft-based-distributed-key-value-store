@@ -10,8 +10,6 @@ services:
         role: leader
         election_time: 5
     container_name: raft-node-1
-    ports:
-      - "50051:50051"
 
   raft-2:
     build: 

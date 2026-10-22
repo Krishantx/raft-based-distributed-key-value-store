@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	pb "raft-based-kv/proto"
@@ -41,70 +42,77 @@ func NewRequestForwarder() requestForwarder {
 }
 
 func (this *requestForwarder) getKeyValue(key string, req pb.Key) (pb.Response, error) {
-	addr := HOSTNAME + ":" + PORT
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
-	}
-
-	client := pb.NewProxyToNodeClient(conn)
+	clients := this.broadcastAllNodes()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	fmt.Println("Request Reached the forwarder")
-	response, err := client.GetKeyValue(ctx, &req)
-	fmt.Printf("Request reached the request forwarder")
-	return *response, err
+	for i := 0; i < 5; i++ {
+		response, err := clients[i].GetKeyValue(ctx, &req)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if response != nil {
+			return *response, err
+		}
+	}
+	err := errors.New("None of the Nodes returned a response")
+	return pb.Response{}, err
 }
 
 func (this *requestForwarder) deleteKeyValue(key string, req pb.Key) (pb.Response, error) {
-	addr := HOSTNAME + ":" + PORT
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
-	}
-
-	client := pb.NewProxyToNodeClient(conn)
+	clients := this.broadcastAllNodes()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	fmt.Println("Request Reached the forwarder")
-	response, err := client.DeleteKeyValue(ctx, &req)
-	return *response, err
+	for i := 0; i < 5; i++ {
+		response, err := clients[i].DeleteKeyValue(ctx, &req)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if response != nil {
+			return *response, err
+		}
+	}
+	err := errors.New("None of the Nodes returned a response")
+	return pb.Response{}, err
 }
 
 func (this *requestForwarder) addKeyValue(req pb.KeyValue) (pb.Response, error) {
-	addr := HOSTNAME + ":" + PORT
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
-	}
-
-	client := pb.NewProxyToNodeClient(conn)
+	clients := this.broadcastAllNodes()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	fmt.Println("Request Reached the forwarder")
-	response, err := client.AddKeyValue(ctx, &req)
-	return *response, err
+	for i := 0; i < 5; i++ {
+		response, err := clients[i].AddKeyValue(ctx, &req)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if response != nil {
+			return *response, err
+		}
+	}
+	err := errors.New("None of the Nodes returned a response")
+	return pb.Response{}, err
 }
 
 func (this *requestForwarder) putKeyValue(req pb.KeyValue) (pb.Response, error) {
-	addr := HOSTNAME + ":" + PORT
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
-	}
-
-	client := pb.NewProxyToNodeClient(conn)
+	clients := this.broadcastAllNodes()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	fmt.Println("Request Reached the forwarder")
-	response, err := client.PutKeyValue(ctx, &req)
-	return *response, err
+	for i := 0; i < 5; i++ {
+		response, err := clients[i].PutKeyValue(ctx, &req)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if response != nil {
+			return *response, err
+		}
+	}
+	err := errors.New("None of the Nodes returned a response")
+	return pb.Response{}, err
 }
 
-func (this *requestForwarder) broadcastAllNodes() {
+func (this *requestForwarder) broadcastAllNodes() [5]pb.ProxyToNodeClient {
 	var clients [5]pb.ProxyToNodeClient
 	for i := 0; i < 5; i++ {
-		addr := HOSTNAME + ":" + PORT
+		addr := this.allNodeDetails[i].hostname + ":" + this.allNodeDetails[i].port
 		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("Failed to connect : %s: %v", addr, err)
@@ -113,4 +121,5 @@ func (this *requestForwarder) broadcastAllNodes() {
 		client := pb.NewProxyToNodeClient(conn)
 		clients[i] = client
 	}
+	return clients
 }

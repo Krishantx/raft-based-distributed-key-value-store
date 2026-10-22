@@ -36,6 +36,7 @@ func (s *HTTPController) StartHTTPController() {
 
 func (s *HTTPController) getKeyValue(w http.ResponseWriter, req *http.Request) {
 	key := req.URL.Path[1:]
+	println("HTTP Controller works", key)
 	keyValue, err := s.proxyService.GetKeyValue(key)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -52,7 +53,7 @@ func (s *HTTPController) addKeyValue(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Incorrect Payload", http.StatusBadRequest)
 		return
 	}
-	keyValue, err := s.proxyService.AddKeyValue(payload)
+	keyValue, err := s.proxyService.AddKeyValue(payload.Key, payload.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -68,11 +69,14 @@ func (s *HTTPController) putKeyValue(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Incorrect Payload", http.StatusBadRequest)
 		return
 	}
-	keyValue, err := s.proxyService.PutKeyValue(payload)
+	keyValue, err := s.proxyService.PutKeyValue(payload.Key, payload.Value)
 	json.NewEncoder(w).Encode(keyValue)
 }
 func (s *HTTPController) deleteKeyValue(w http.ResponseWriter, req *http.Request) {
 	key := req.URL.Path[1:]
-	keyValue := s.proxyService.DeleteKeyValue(key)
+	keyValue, err := s.proxyService.DeleteKeyValue(key)
+	if err != nil {
+		fmt.Println(err)
+	}
 	json.NewEncoder(w).Encode(keyValue)
 }

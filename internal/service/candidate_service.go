@@ -1,12 +1,17 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"raft-based-kv/internal/clients"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
+	"time"
+
+	grpc "google.golang.org/grpc"
+	insecure "google.golang.org/grpc/credentials/insecure"
 )
 
 type CandidateService struct {
@@ -14,10 +19,9 @@ type CandidateService struct {
 	config      *models.Config
 }
 
-func NewCandidateService(grpcClients clients.GRPCClientList, config *models.Config) CandidateService {
+func NewCandidateService(config *models.Config) CandidateService {
 	return CandidateService{
-		grpcClients: grpcClients,
-		config:      config,
+		config: config,
 	}
 }
 
@@ -30,17 +34,21 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		Log:  int32(nodeRaftData.GetIndex()),
 	}
 
-	grpcClinetList := clients.GRPCClientList{}
-
-	grpcClinetList.ConnectAllNodes()
-
 	voteResponse := [5]pb.Vote{}
 
 	//Gather Votes
 	for i := 0; i < 5; i++ {
 		nodeRaftData.IncrementTerm()
-		grpcClient := grpcClinetList.GetClienyByIndex(i)
-		res, err := grpcClient.GetClinet().StartVoting(grpcClient.GetContext(), req)
+		addr := "raft-node-1" + ":" + "50051"
+		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("Failed to connect : %s: %v", addr, err)
+		}
+
+		client := pb.NewVotingServiceClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		res, err := client.StartVoting(ctx, req)
 		if err != nil {
 			log.Panic("Error Sending gRPC Request", err)
 		}

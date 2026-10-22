@@ -65,6 +65,7 @@ func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote
 }
 
 func (s *proxyServ) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	fmt.Print("Delete Key value")
 	err := s.repository.DeleteKeyValue(req.Key)
 	if err != nil {
 		return &pb.Response{}, err
@@ -81,6 +82,7 @@ func (s *proxyServ) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Respon
 
 func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
 	keyValue, err := s.repository.UpdateKeyValue(req.Key, req.Value)
+	fmt.Print("Put Key value")
 	if err != nil {
 		return &pb.Response{}, err
 	}
@@ -96,6 +98,7 @@ func (s *proxyServ) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Resp
 }
 
 func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	fmt.Println("get Key value")
 	keyValue, err := s.repository.GetKeyValue(req.Key)
 	if err != nil {
 		return &pb.Response{}, err
@@ -112,8 +115,10 @@ func (s *proxyServ) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Response,
 }
 
 func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	fmt.Print("add Key value")
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
+
 		return &pb.Response{}, err
 	}
 	return &pb.Response{

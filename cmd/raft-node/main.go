@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"raft-based-kv/internal/clients"
 	controller "raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	models "raft-based-kv/internal/models"
@@ -15,9 +14,6 @@ import (
 
 func main() {
 	TimerOps := make(chan enums.TimerOperations)
-
-	grpcClients := clients.GRPCClientList{}
-	grpcClients.ConnectAllNodes()
 
 	config := setConfig()
 
@@ -42,7 +38,7 @@ func main() {
 			leader_service.StartLeaderService()
 		} else if config.Role == enums.Candidate {
 			// If the role of the Node is Candidate. Start the follower service
-			candidateService := service.NewCandidateService(grpcClients, &config)
+			candidateService := service.NewCandidateService(&config)
 			candidateService.StartCandidateService(&nodeRaftData)
 		}
 	}
@@ -59,7 +55,7 @@ func setConfig() models.Config {
 		fmt.Printf("Cannot parse Election Time: %s", err)
 	}
 	config.ElectionTime = time
-	config.Role = enums.Follower
+	config.Role = enums.Role(os.Getenv("role"))
 	config.Follower = strings.Split(os.Getenv("followers"), ",")
 	return config
 }

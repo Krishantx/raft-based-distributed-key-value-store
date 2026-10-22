@@ -9,6 +9,5 @@ func main() {
 	proxyService := service.NewProxyService()
 	httpController := controller.NewHTTPController(proxyService)
 	go httpController.StartHTTPController()
-
 	select {}
 }

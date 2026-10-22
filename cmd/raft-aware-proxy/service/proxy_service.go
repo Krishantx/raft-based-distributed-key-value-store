@@ -1,14 +1,8 @@
 package service
 
 import (
-	"context"
-	"log"
 	models "raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type ProxyService struct {
@@ -28,7 +22,7 @@ func (p *ProxyService) GetKeyValue(key string) (models.KeyValue, error) {
 		Key:  key,
 	}
 
-	response, err := p.requestForwarder.getKey(key, *req)
+	response, err := p.requestForwarder.getKeyValue(key, *req)
 
 	if err != nil {
 		return models.KeyValue{}, err
@@ -40,83 +34,56 @@ func (p *ProxyService) GetKeyValue(key string) (models.KeyValue, error) {
 	}, nil
 }
 
-func (p *ProxyService) DeleteKeyValue(key string) models.KeyValue {
-	// leaderAddr := p.Leader.Hostname + ":" + p.Leader.Port
-	//
-	// conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect : %s: %v", leaderAddr, err)
-	// }
-	//
-	// client := pb.NewProxyToNodeClient(conn)
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	// defer cancel()
-	//
-	// req := &pb.Key{
-	// 	Term: 1,
-	// 	Key:  key,
-	// }
-	//
-	// response, err := client.DeleteKeyValue(ctx, req)
-	// return models.KeyValue{
-	// 	Key:   response.GetKeyValue().Key,
-	// 	Value: response.GetKeyValue().Value,
-	// }
-	return models.KeyValue{}
-}
-
-func (p *ProxyService) PutKeyValue(keyValue models.KeyValue) (models.KeyValue, error) {
-	leaderAddr := "post"
-	// Send a gRPC Request to the Leader
-
-	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", leaderAddr, err)
+func (p *ProxyService) DeleteKeyValue(key string) (models.KeyValue, error) {
+	req := &pb.Key{
+		Term: 1,
+		Key:  key,
 	}
 
-	client := pb.NewProxyToNodeClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	response, err := p.requestForwarder.deleteKeyValue(key, *req)
 
-	req := &pb.KeyValue{
-		Term:  1,
-		Key:   keyValue.Key,
-		Value: keyValue.Value,
-	}
-
-	response, err := client.PutKeyValue(ctx, req)
 	if err != nil {
 		return models.KeyValue{}, err
 	}
+
 	return models.KeyValue{
 		Key:   response.GetKeyValue().Key,
 		Value: response.GetKeyValue().Value,
 	}, nil
 }
 
-func (p *ProxyService) AddKeyValue(keyValue models.KeyValue) (models.KeyValue, error) {
-	leaderAddr := "port"
-	// Send a gRPC Request to the Leader
-
-	conn, err := grpc.NewClient(leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", leaderAddr, err)
-	}
-
-	client := pb.NewProxyToNodeClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
+func (p *ProxyService) PutKeyValue(key string, value string) (models.KeyValue, error) {
 	req := &pb.KeyValue{
 		Term:  1,
-		Key:   keyValue.Key,
-		Value: keyValue.Value,
+		Key:   key,
+		Value: value,
 	}
 
-	response, err := client.AddKeyValue(ctx, req)
+	response, err := p.requestForwarder.putKeyValue(*req)
+
 	if err != nil {
 		return models.KeyValue{}, err
 	}
+
+	return models.KeyValue{
+		Key:   response.GetKeyValue().Key,
+		Value: response.GetKeyValue().Value,
+	}, nil
+}
+
+func (p *ProxyService) AddKeyValue(key string, value string) (models.KeyValue, error) {
+	req := &pb.KeyValue{
+		Term:  1,
+		Key:   key,
+		Value: value,
+	}
+
+	response, err := p.requestForwarder.addKeyValue(*req)
+
+	if err != nil {
+		return models.KeyValue{}, err
+	}
+
 	return models.KeyValue{
 		Key:   response.GetKeyValue().Key,
 		Value: response.GetKeyValue().Value,

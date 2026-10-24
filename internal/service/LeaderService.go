@@ -6,9 +6,7 @@ import (
 	"strconv"
 
 	controller "raft-based-kv/internal/controller"
-	"raft-based-kv/internal/enums"
 
-	// "fmt"
 	"log"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
@@ -27,19 +25,17 @@ type LeaderService struct {
 	node_name    string
 	term         int
 	conf         models.Config
-	timerOps     chan enums.TimerOperations
 	nodeRaftData models.NodeRaftData
 	repo         repository.Repo
 	controller   *grpc.Server
 	lis          net.Listener
 }
 
-func NewLeaderService(config models.Config, TimerOps chan enums.TimerOperations, nodeRaftData models.NodeRaftData, repo repository.Repo) LeaderService {
+func NewLeaderService(config models.Config, nodeRaftData models.NodeRaftData, repo repository.Repo) LeaderService {
 	return LeaderService{
 		node_name:    config.NodeName,
 		term:         1,
 		conf:         config,
-		timerOps:     TimerOps,
 		nodeRaftData: nodeRaftData,
 		repo:         repo,
 	}

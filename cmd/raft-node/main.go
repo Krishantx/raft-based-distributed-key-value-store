@@ -21,7 +21,7 @@ func main() {
 	repo := repo.NewRepository()
 	for {
 		if config.Role == enums.Follower {
-			follower_service := service.New_Follower_Service(20, &config, TimerOps)
+			follower_service := service.New_Follower_Service(&config, TimerOps)
 			follower_service.StartFollowerService()
 			follower_service.Close()
 		} else if config.Role == enums.Leader {

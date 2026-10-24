@@ -5,28 +5,26 @@ import (
 	"fmt"
 	"log"
 	"net"
-	controller "raft-based-kv/internal/controller"
+	"raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
 
-	grpc "google.golang.org/grpc"
-	insecure "google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-func New_Follower_Service(VotingTimeout int, config *models.Config, timerOps chan enums.TimerOperations) Follower_Service {
+func New_Follower_Service(config *models.Config, timerOps chan enums.TimerOperations) Follower_Service {
 
 	return Follower_Service{
-		VotingTimeout: VotingTimeout,
-		config:        config,
-		timerOps:      timerOps,
+		config:   config,
+		timerOps: timerOps,
 	}
 }
 
 type Follower_Service struct {
-	VotingTimeout      int
 	config             *models.Config
 	timerOps           chan enums.TimerOperations
 	followerController *grpc.Server

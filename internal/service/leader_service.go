@@ -7,6 +7,7 @@ import (
 
 	// "fmt"
 	"log"
+	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
@@ -32,6 +33,7 @@ func NewLeaderService(config models.Config) LeaderService {
 }
 
 func (s *LeaderService) StartLeaderService() {
+	loggers.Raft.Println("Role Set to Leader")
 	ticker := time.NewTicker(time.Second)
 	for {
 		<-ticker.C

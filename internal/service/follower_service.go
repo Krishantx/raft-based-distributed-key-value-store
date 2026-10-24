@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"raft-based-kv/internal/enums"
+	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
@@ -30,6 +31,7 @@ type Follower_Service struct {
 }
 
 func (this *Follower_Service) StartFollowerService() {
+	loggers.Raft.Println("Role Set to Follower")
 	this.StartElectionTimer()
 }
 

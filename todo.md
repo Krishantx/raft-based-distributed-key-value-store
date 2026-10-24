@@ -16,9 +16,9 @@
 ## Raft Node
 
 ### Leader Role
-- [ ] Send Heartbeat using gRPC protocol
-- [ ] Figure out a way to implement logs (Need these logs in persistent store, can write to a .log log file or use a SQLite database)
-
+- [x] Send Heartbeat using gRPC protocol
+- [x] (Using a .log file) Figure out a way to implement logs (Need these logs in persistent store, can write to a .log log file or use a SQLite database)
+- [ ] implement a global log to log all operations in a file
 ### Candidate Role (Work on in the end - This is only required when things go wrong - Design for a perfect system first build fault tolerance later)
 
 

@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+
 	// "fmt"
 	"log"
 	"raft-based-kv/internal/models"
@@ -29,7 +32,7 @@ func NewLeaderService(config models.Config) LeaderService {
 }
 
 func (s *LeaderService) StartLeaderService() {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(time.Second)
 	for {
 		<-ticker.C
 		s.SendHeartbeat()
@@ -43,14 +46,14 @@ func (this *LeaderService) grpcClient(addr string) {
 	}
 
 	client := pb.NewHeartbeatServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 
 	req := &pb.Leader{NodeName: this.node_name}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	response, err := client.ReceiveHeartbeat(ctx, req)
 
 	if err != nil {
-		log.Fatalf("Error Sending Heartbear %s : %v", addr, err)
+		log.Println("Error Sending Heartbear %s : %v", addr, err)
 	}
 
 	if int(response.Term) == this.term {
@@ -61,8 +64,12 @@ func (this *LeaderService) grpcClient(addr string) {
 }
 
 func (this *LeaderService) SendHeartbeat() {
-	for i := 0; i < len(this.conf.Follower); i++ {
-		addr := this.conf.Follower[i] + ":50051"
-		this.grpcClient(addr)
+	addrs := "raft-node-"
+	for i := 1; i < 6; i++ {
+		addr := addrs + strconv.Itoa(i) + ":50051"
+		fmt.Println(addr + " : " + this.node_name + ":50051")
+		if addr != this.node_name+":50051" {
+			go this.grpcClient(addr)
+		}
 	}
 }

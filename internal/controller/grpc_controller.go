@@ -29,6 +29,7 @@ func New_gRPC_Server(repo *repository.Repo, NodeRaftData *models.NodeRaftData, t
 
 type server struct {
 	pb.UnimplementedHeartbeatServiceServer
+	timerOps chan enums.TimerOperations
 }
 
 type proxyServ struct {
@@ -133,6 +134,7 @@ func (s *proxyServ) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Resp
 }
 func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.ClientConfirmation, error) {
 	fmt.Println("Heartbeat Recieved")
+	s.timerOps <- enums.RESET
 	return &pb.ClientConfirmation{
 		Term: 1,
 	}, nil
@@ -145,7 +147,9 @@ func (s *gRPC_Server) StartgRpcController(config models.Config) {
 
 	grpcServ := grpc.NewServer()
 
-	pb.RegisterHeartbeatServiceServer(grpcServ, &server{})
+	pb.RegisterHeartbeatServiceServer(grpcServ, &server{
+		timerOps: s.timerOps,
+	})
 	pb.RegisterVotingServiceServer(grpcServ, &voting{
 		nodeRaftData: *s.nodeRaftData,
 		timerOps:     s.timerOps,

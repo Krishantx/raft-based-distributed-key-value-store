@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
@@ -48,11 +49,15 @@ func (this *Follower_Service) StartElectionTimer() {
 			if a == enums.STOP {
 				timer.Stop()
 			} else if a == enums.RESET {
+				logFile, err := os.OpenFile("logfile.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 666)
+				if err != nil {
+					log.Panicln("Could not open log file %s", err)
+				}
+				defer logFile.Close()
+				log.SetOutput(logFile)
+				log.Println("Recieved Hear")
 				timer.Reset(duration)
 			}
-			// case <-ch:
-			// fmt.Println("Heartbeat Recieved Reset Timer")
-			// timer.Reset(5 * time.Second)
 		}
 	}
 }

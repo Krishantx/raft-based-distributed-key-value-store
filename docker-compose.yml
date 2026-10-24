@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
-        node_name: A
-        role: leader
+        node_name: raft-node-1
+        role: Leader
         election_time: 5
     container_name: raft-node-1
 
@@ -16,8 +16,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
-        node_name: B
-        role: follower
+        node_name: raft-node-2
+        role: Follower
         election_time: 5
     container_name: raft-node-2
   raft-3:
@@ -25,8 +25,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
-        node_name: C 
-        role: follower
+        node_name: raft-node-3
+        role: Follower
         election_time: 5
     container_name: raft-node-3
   raft-4:
@@ -34,8 +34,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.node
     environment:
-        node_name: D
-        role: follower
+        node_name: raft-node-4
+        role: Follower
         election_time: 5
     container_name: raft-node-4
   raft-5:
@@ -44,8 +44,8 @@ services:
       dockerfile: ./docker/Dockerfile.node
     container_name: raft-node-5
     environment:
-        node_name: E
-        role: follower
+        node_name: raft-node-5
+        role: Follower
         election_time: 5
   
   raft-aware-proxy:

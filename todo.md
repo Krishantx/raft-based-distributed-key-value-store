@@ -13,4 +13,18 @@
 - [x] Receives HTTP Requests from the client and forwards them to the raft nodes
 - [x] Broadcasts the requests to all the nodes in the cluster (Hardcoded for now)
 
+## Raft Node
 
+### Leader Role
+- [ ] Send Heartbeat using gRPC protocol
+- [ ] Figure out a way to implement logs (Need these logs in persistent store, can write to a .log log file or use a SQLite database)
+
+### Candidate Role (Work on in the end - This is only required when things go wrong - Design for a perfect system first build fault tolerance later)
+
+
+### Follower Role
+
+
+
+### On Startup
+- [ ] Load previous logs

@@ -32,7 +32,8 @@ type Follower_Service struct {
 
 func (this *Follower_Service) StartFollowerService() {
 	loggers.Raft.Println("Role Set to Follower")
-	this.StartElectionTimer()
+	go this.StartElectionTimer()
+
 }
 
 func (this *Follower_Service) StartElectionTimer() {

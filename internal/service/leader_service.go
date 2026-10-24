@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"strconv"
 
+	controller "raft-based-kv/internal/controller"
+	"raft-based-kv/internal/enums"
 	// "fmt"
 	"log"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
+
+	repository "raft-based-kv/internal/repo"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -19,20 +23,29 @@ import (
 // Send Heartbeat every 100ms
 
 type LeaderService struct {
-	node_name string
-	term      int
-	conf      models.Config
+	node_name    string
+	term         int
+	conf         models.Config
+	timerOps     chan enums.TimerOperations
+	nodeRaftData models.NodeRaftData
 }
 
-func NewLeaderService(config models.Config) LeaderService {
+func NewLeaderService(config models.Config, TimerOps chan enums.TimerOperations, nodeRaftData models.NodeRaftData) LeaderService {
 	return LeaderService{
-		node_name: config.NodeName,
-		term:      1,
-		conf:      config,
+		node_name:    config.NodeName,
+		term:         1,
+		conf:         config,
+		timerOps:     TimerOps,
+		nodeRaftData: nodeRaftData,
 	}
 }
 
 func (s *LeaderService) StartLeaderService() {
+
+	Repo := repository.NewRepository()
+	grpc_Server := controller.New_gRPC_Server(Repo, &s.nodeRaftData, s.timerOps)
+	go grpc_Server.StartgRpcController()
+
 	loggers.Raft.Println("Role Set to Leader")
 	ticker := time.NewTicker(time.Second)
 	for {

@@ -3,37 +3,26 @@ package main
 import (
 	"fmt"
 	"os"
-	controller "raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	models "raft-based-kv/internal/models"
-	repository "raft-based-kv/internal/repo"
 	service "raft-based-kv/internal/service"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	loggers.Init()
 	TimerOps := make(chan enums.TimerOperations)
-
 	config := setConfig()
-
 	nodeRaftData := models.NodeRaftData{}
-
 	nodeRaftData.Init()
-
-	Repo := repository.NewRepository()
-
-	grpc_Server := controller.New_gRPC_Server(Repo, &nodeRaftData, TimerOps)
-	go grpc_Server.StartgRpcController(config)
-
+	loggers.Init()
 	for {
 		if config.Role == enums.Follower {
 			follower_service := service.New_Follower_Service(20, &config, TimerOps)
 			follower_service.StartFollowerService()
 		} else if config.Role == enums.Leader {
-			leader_service := service.NewLeaderService(config)
+			leader_service := service.NewLeaderService(config, TimerOps, nodeRaftData)
 			leader_service.StartLeaderService()
 		} else if config.Role == enums.Candidate {
 			candidateService := service.NewCandidateService(&config)

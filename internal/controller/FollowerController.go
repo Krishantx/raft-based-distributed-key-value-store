@@ -24,19 +24,23 @@ func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.C
 	}, nil
 }
 
-func StartFollowerController(timerOps chan enums.TimerOperations) {
+func StartFollowerController(timerOps chan enums.TimerOperations) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Cannot listen on port 50051: %v", err)
 	}
 
 	followerServer := grpc.NewServer()
+
 	pb.RegisterHeartbeatServiceServer(followerServer, &server{
 		timerOps: timerOps,
 	})
+	go func() {
+		err = followerServer.Serve(lis)
+		if err != nil {
+			log.Fatalf("Error creating a gRPC server: %v", err)
+		}
+	}()
 
-	err = followerServer.Serve(lis)
-	if err != nil {
-		log.Fatalf("Error creating a gRPC server: %v", err)
-	}
+	return followerServer, lis
 }

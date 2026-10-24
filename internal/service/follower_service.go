@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
+	"net"
+	controller "raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
@@ -25,17 +26,22 @@ func New_Follower_Service(VotingTimeout int, config *models.Config, timerOps cha
 }
 
 type Follower_Service struct {
-	VotingTimeout int
-	config        *models.Config
-	timerOps      chan enums.TimerOperations
+	VotingTimeout      int
+	config             *models.Config
+	timerOps           chan enums.TimerOperations
+	followerController *grpc.Server
+	lis                net.Listener
 }
 
 func (this *Follower_Service) StartFollowerService() {
 	loggers.Raft.Println("Role Set to Follower")
-	go this.StartElectionTimer()
-
+	this.followerController, this.lis = controller.StartFollowerController(this.timerOps)
+	this.StartElectionTimer()
 }
-
+func (this *Follower_Service) Close() {
+	this.followerController.Stop()
+	this.lis.Close()
+}
 func (this *Follower_Service) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
 	duration := 5 * time.Second
@@ -46,19 +52,12 @@ func (this *Follower_Service) StartElectionTimer() {
 		case <-timer.C:
 			fmt.Println("Timer expired: Changing role to candidate")
 			this.config.Role = enums.Candidate
-			break
 
 		case a := <-this.timerOps:
 			if a == enums.STOP {
 				timer.Stop()
 			} else if a == enums.RESET {
-				logFile, err := os.OpenFile("logfile.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 666)
-				if err != nil {
-					log.Panicln("Could not open log file %s", err)
-				}
-				defer logFile.Close()
-				log.SetOutput(logFile)
-				log.Println("Recieved Hear")
+				fmt.Println("Timer Reset")
 				timer.Reset(duration)
 			}
 		}

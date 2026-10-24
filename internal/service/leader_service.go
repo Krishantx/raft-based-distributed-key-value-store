@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"net"
 	"strconv"
 
 	controller "raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
+
 	// "fmt"
 	"log"
 	"raft-based-kv/internal/loggers"
@@ -28,24 +29,24 @@ type LeaderService struct {
 	conf         models.Config
 	timerOps     chan enums.TimerOperations
 	nodeRaftData models.NodeRaftData
+	repo         repository.Repo
+	controller   *grpc.Server
+	lis          net.Listener
 }
 
-func NewLeaderService(config models.Config, TimerOps chan enums.TimerOperations, nodeRaftData models.NodeRaftData) LeaderService {
+func NewLeaderService(config models.Config, TimerOps chan enums.TimerOperations, nodeRaftData models.NodeRaftData, repo repository.Repo) LeaderService {
 	return LeaderService{
 		node_name:    config.NodeName,
 		term:         1,
 		conf:         config,
 		timerOps:     TimerOps,
 		nodeRaftData: nodeRaftData,
+		repo:         repo,
 	}
 }
 
 func (s *LeaderService) StartLeaderService() {
-
-	Repo := repository.NewRepository()
-	grpc_Server := controller.New_gRPC_Server(Repo, &s.nodeRaftData, s.timerOps)
-	go grpc_Server.StartgRpcController()
-
+	s.controller, s.lis = controller.StartLeaderController(s.repo)
 	loggers.Raft.Println("Role Set to Leader")
 	ticker := time.NewTicker(time.Second)
 	for {
@@ -69,20 +70,24 @@ func (this *LeaderService) grpcClient(addr string) {
 
 	if err != nil {
 		log.Println("Error Sending Heartbear %s : %v", addr, err)
-	}
-
-	if int(response.Term) == this.term {
-		// fmt.Println("The current Term is correct and I am still the leader")
 	} else {
-		// fmt.Println("The term does not match and I am no longer the leader")
+		if int(response.Term) == this.term {
+			// fmt.Println("The current Term is correct and I am still the leader")
+		} else {
+			// fmt.Println("The term does not match and I am no longer the leader")
+		}
 	}
+}
+
+func (this *LeaderService) Close() {
+	this.controller.Stop()
+	this.lis.Close()
 }
 
 func (this *LeaderService) SendHeartbeat() {
 	addrs := "raft-node-"
 	for i := 1; i < 6; i++ {
 		addr := addrs + strconv.Itoa(i) + ":50051"
-		fmt.Println(addr + " : " + this.node_name + ":50051")
 		if addr != this.node_name+":50051" {
 			go this.grpcClient(addr)
 		}

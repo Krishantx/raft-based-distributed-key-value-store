@@ -84,21 +84,23 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	}, nil
 }
 
-func StartLeaderController(repository repository.Repo) {
+func StartLeaderController(repository repository.Repo) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Could not listen on port 50051: %v", err)
 	}
 
 	leaderController := grpc.NewServer()
-
 	pb.RegisterProxyToNodeServer(leaderController, &proxyToNode{
 		repository: repository,
 	})
-	fmt.Println("gRPC Listing on port: 50051")
-	err = leaderController.Serve(lis)
-	if err != nil {
-		log.Fatal(err)
-	}
 
+	fmt.Println("gRPC Listing on port: 50051")
+	go func() {
+		err = leaderController.Serve(lis)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	return leaderController, lis
 }

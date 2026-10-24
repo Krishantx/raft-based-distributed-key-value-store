@@ -20,7 +20,7 @@ type voting struct {
 
 func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
 	fmt.Println("Starting Voting procedure")
-	this.timerOps <- enums.STOP
+	this.timerOps <- enums.RESET
 	if req.Term < int32(this.nodeRaftData.GetTerm()) {
 		return &pb.Vote{
 			Vote: false,

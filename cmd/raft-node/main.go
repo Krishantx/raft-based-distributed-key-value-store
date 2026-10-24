@@ -5,6 +5,7 @@ import (
 	"os"
 	controller "raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
+	"raft-based-kv/internal/loggers"
 	models "raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	service "raft-based-kv/internal/service"
@@ -13,7 +14,7 @@ import (
 )
 
 func main() {
-
+	loggers.Init()
 	TimerOps := make(chan enums.TimerOperations)
 
 	config := setConfig()

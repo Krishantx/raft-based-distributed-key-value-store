@@ -26,8 +26,6 @@ func NewCandidateService(config *models.Config) CandidateService {
 }
 
 func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaftData) {
-	// Send gRPC request to every single node.
-	//  For this I also want to know what Term I am on and what index I am on.
 
 	req := &pb.NodeInfo{
 		Term: int32(nodeRaftData.GetTerm()),

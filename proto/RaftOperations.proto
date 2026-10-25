@@ -1,0 +1,24 @@
+syntax="proto3";
+
+option go_package="./proto";
+
+service RaftOperations {
+  rpc AppendEntries(Entry) returns (IsAppended);
+  rpc CommitEntry(Entry) returns (IsCommited);
+}
+
+message Entry {
+  uint64 lastLogTerm = 1;
+  uint64 lastLogIndex = 2;
+  string command = 3;
+  string key = 4;
+  string value = 5;
+}
+
+message IsAppended {
+  bool IsAppended = 1;
+}
+
+message IsCommited {
+  bool IsCommited = 1;
+}

@@ -16,6 +16,24 @@ type server struct {
 	timerOps chan enums.TimerOperations
 }
 
+type raftOperations struct {
+	pb.UnimplementedRaftOperationsServer
+}
+
+func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry) (*pb.IsAppended, error) {
+	log.Println("Appending entries")
+	return &pb.IsAppended{
+		IsAppended: true,
+	}, nil
+}
+
+func (this *raftOperations) CommitEntry(context context.Context, req *pb.Entry) (*pb.IsCommited, error) {
+	log.Println("Commiting Entry")
+	return &pb.IsCommited{
+		IsCommited: true,
+	}, nil
+}
+
 func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.ClientConfirmation, error) {
 	fmt.Println("Heartbeat Recieved")
 	s.timerOps <- enums.RESET
@@ -35,6 +53,7 @@ func StartFollowerController(timerOps chan enums.TimerOperations) (*grpc.Server,
 	pb.RegisterHeartbeatServiceServer(followerServer, &server{
 		timerOps: timerOps,
 	})
+	pb.RegisterRaftOperationsServer(followerServer, &raftOperations{})
 	go func() {
 		err = followerServer.Serve(lis)
 		if err != nil {

@@ -67,7 +67,35 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 }
 
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
-	fmt.Print("add Key value")
+	// Info to also send along with the AppendEntries RPC
+
+	// 1. lastLogIndex, 2. lastTermIndex,
+	//Append Entries
+	//Send an commir entires RPC to followers
+	// Once majority appends entries commit entries
+	// Also maintain a commit index
+	// Create a gRPC Client
+
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect : %s: %v", addr, err)
+	}
+
+	client := pb.NewVotingServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	req := &pb.NodeInfo{
+		Term: 1,
+		Log:  1,
+		// NodeName: conf.NodeName,
+	}
+	response, err := client.StartVoting(ctx, req)
+
+	if err != nil {
+		log.Fatalf("Error Sending Heartbear %s : %v", addr, err)
+	}
+	fmt.Print(response)
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
 

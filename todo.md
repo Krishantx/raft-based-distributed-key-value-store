@@ -36,3 +36,10 @@
 
 ### On Startup
 - [ ] Load previous logs
+
+
+## Appending all logs
+- [ ] Step 1: Receives request from the proxy 
+- [ ] Step 2: Appends log to the RaftLog file
+- [ ] Step 3: Send a AppendEntry request to the follower nodes.
+- [ ] Step 4: Once majority nodes send confirmation of commitment => The leader commits it too.

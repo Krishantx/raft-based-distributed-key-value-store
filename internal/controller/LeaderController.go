@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"raft-based-kv/internal/loggers"
+	"raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
 	"strconv"
@@ -19,7 +20,8 @@ import (
 
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
-	repository repository.Repo
+	repository   repository.Repo
+	raftNodeData models.NodeRaftData
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
@@ -158,28 +160,27 @@ func isMajority(count int) bool {
 }
 
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
-	// Info to also send along with the AppendEntries RPC
-
-	// 1. lastLogIndex, 2. lastTermIndex,
-	//Append Entries
-	//Send an commir entires RPC to followers
-	// Once majority appends entries commit entries
-	// Also maintain a commit index
-	// Create a gRPC Client
-
 	//Step 1 Append Entries to your own log
-
-	loggers.Raft.Println("")
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "ADD KEY = VALUE"
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s", index, term, command)
+	log.Printf("Index: %v, Term: %v, Command: %s", index, term, command)
+	// AppendEntries to Logs of the followers
 	err := SendAppendEntryGRPC()
+
+	// Check if majority Appened
 	if err != nil {
 		return &pb.Response{}, err
 	}
 
+	// CommitEntries to the Logs of followers
 	err = SendCommitEntryGRPC()
 
 	if err != nil {
 		return &pb.Response{}, err
 	}
+	s.raftNodeData.IncrementCommitIndex()
+	s.raftNodeData.IncrementIndex()
 
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
@@ -197,7 +198,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	}, nil
 }
 
-func StartLeaderController(repository repository.Repo) (*grpc.Server, net.Listener) {
+func StartLeaderController(repository repository.Repo, nodeRaftData models.NodeRaftData) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Could not listen on port 50051: %v", err)
@@ -205,7 +206,8 @@ func StartLeaderController(repository repository.Repo) (*grpc.Server, net.Listen
 
 	leaderController := grpc.NewServer()
 	pb.RegisterProxyToNodeServer(leaderController, &proxyToNode{
-		repository: repository,
+		repository:   repository,
+		raftNodeData: nodeRaftData,
 	})
 
 	fmt.Println("gRPC Listing on port: 50051")

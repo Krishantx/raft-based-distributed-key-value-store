@@ -2,13 +2,18 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
+	"strconv"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type proxyToNode struct {
@@ -65,6 +70,91 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 		},
 	}, nil
 }
+func SendAppendEntryGRPC() error {
+	addrs := "raft-node-"
+	cnt := 0
+	for i := 1; i < 6; i++ {
+		addr := addrs + strconv.Itoa(i) + ":50051"
+		if addr != os.Getenv("node_name")+":50051" {
+
+			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				log.Fatalf("Failed to connect : %s: %v", addr, err)
+			}
+
+			client := pb.NewRaftOperationsClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			req := &pb.Entry{
+				LastLogTerm:  1,
+				LastLogIndex: 1,
+				Command:      "GET",
+				Key:          "key",
+				Value:        "value",
+			}
+			response, err := client.AppendEntries(ctx, req)
+
+			if err != nil {
+				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
+			} else {
+				fmt.Print(response)
+				if response.IsAppended {
+					cnt++
+				}
+			}
+		}
+	}
+	if isMajority(cnt + 1) {
+		return nil
+	}
+	return errors.New("Majority nodes did not append")
+}
+
+func SendCommitEntryGRPC() error {
+	addrs := "raft-node-"
+	cnt := 0
+	for i := 1; i < 6; i++ {
+		addr := addrs + strconv.Itoa(i) + ":50051"
+		if addr != os.Getenv("node_name")+":50051" {
+
+			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				log.Fatalf("Failed to connect : %s: %v", addr, err)
+			}
+
+			client := pb.NewRaftOperationsClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			req := &pb.Entry{
+				LastLogTerm:  1,
+				LastLogIndex: 1,
+				Command:      "GET",
+				Key:          "key",
+				Value:        "value",
+			}
+			response, err := client.CommitEntry(ctx, req)
+
+			if err != nil {
+				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
+			} else {
+				fmt.Print(response)
+				if response.IsCommited {
+					cnt++
+				}
+			}
+		}
+	}
+	if isMajority(cnt + 1) {
+		return nil
+	}
+	return errors.New("Majority nodes did not Commit")
+}
+func isMajority(count int) bool {
+	totalNodes := 5 //Hardcoded for now, maybe scale later?
+	return count > (totalNodes / 2)
+}
 
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
 	// Info to also send along with the AppendEntries RPC
@@ -76,26 +166,11 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	// Also maintain a commit index
 	// Create a gRPC Client
 
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	err := SendAppendEntryGRPC()
 	if err != nil {
-		log.Fatalf("Failed to connect : %s: %v", addr, err)
+		return &pb.Response{}, err
 	}
 
-	client := pb.NewVotingServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	req := &pb.NodeInfo{
-		Term: 1,
-		Log:  1,
-		// NodeName: conf.NodeName,
-	}
-	response, err := client.StartVoting(ctx, req)
-
-	if err != nil {
-		log.Fatalf("Error Sending Heartbear %s : %v", addr, err)
-	}
-	fmt.Print(response)
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
 

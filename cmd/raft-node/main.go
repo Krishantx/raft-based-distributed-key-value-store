@@ -1,20 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	models "raft-based-kv/internal/models"
 	"raft-based-kv/internal/repo"
 	service "raft-based-kv/internal/service"
-	"strconv"
-	"strings"
 )
 
 func main() {
 	TimerOps := make(chan enums.TimerOperations)
-	config := setConfig()
+	config := models.Config{}
+	config.Init()
 	nodeRaftData := models.NodeRaftData{}
 	nodeRaftData.Init()
 	loggers.Init()
@@ -33,20 +30,4 @@ func main() {
 			candidateService.StartCandidateService(&nodeRaftData)
 		}
 	}
-}
-
-func setConfig() models.Config {
-	config := models.Config{}
-
-	config.NodeName = os.Getenv("node_name")
-	t := os.Getenv("election_time")
-	fmt.Println("ElectionTime :" + t)
-	time, err := strconv.Atoi(os.Getenv("election_time"))
-	if err != nil {
-		fmt.Printf("Cannot parse Election Time: %s", err)
-	}
-	config.ElectionTime = time
-	config.Role = enums.Role(os.Getenv("role"))
-	config.Follower = strings.Split(os.Getenv("followers"), ",")
-	return config
 }

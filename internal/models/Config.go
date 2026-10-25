@@ -16,18 +16,16 @@ type Config struct {
 	Follower     []string
 }
 
-func (this *Config) Init() Config {
-	config := Config{}
+func (this *Config) Init() {
 
-	config.NodeName = os.Getenv("node_name")
+	this.NodeName = os.Getenv("node_name")
 	t := os.Getenv("election_time")
 	fmt.Println("ElectionTime :" + t)
 	time, err := strconv.Atoi(os.Getenv("election_time"))
 	if err != nil {
 		fmt.Printf("Cannot parse Election Time: %s", err)
 	}
-	config.ElectionTime = time
-	config.Role = enums.Role(os.Getenv("role"))
-	config.Follower = strings.Split(os.Getenv("followers"), ",")
-	return config
+	this.ElectionTime = time
+	this.Role = enums.Role(os.Getenv("role"))
+	this.Follower = strings.Split(os.Getenv("followers"), ",")
 }

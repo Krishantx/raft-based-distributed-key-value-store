@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"raft-based-kv/internal/loggers"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
 	"strconv"
@@ -166,7 +167,16 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	// Also maintain a commit index
 	// Create a gRPC Client
 
+	//Step 1 Append Entries to your own log
+
+	loggers.Raft.Println("")
 	err := SendAppendEntryGRPC()
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	err = SendCommitEntryGRPC()
+
 	if err != nil {
 		return &pb.Response{}, err
 	}

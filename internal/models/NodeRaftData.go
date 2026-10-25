@@ -1,8 +1,16 @@
 package models
 
 type NodeRaftData struct {
-	term  uint64
-	index uint64
+	term        uint64
+	index       uint64
+	commitIndex uint64
+}
+
+func (this *NodeRaftData) GetCommitIndex() uint64 {
+	return this.commitIndex
+}
+func (this *NodeRaftData) IncrementCommitIndex() {
+	this.commitIndex = this.commitIndex + 1
 }
 
 func (this *NodeRaftData) GetTerm() uint64 {

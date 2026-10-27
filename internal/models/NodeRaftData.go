@@ -1,9 +1,12 @@
 package models
 
+import "sync"
+
 type NodeRaftData struct {
 	term        uint64
 	index       uint64
 	commitIndex uint64
+	mu          sync.Mutex
 }
 
 func (this *NodeRaftData) GetCommitIndex() uint64 {

@@ -73,7 +73,7 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 		},
 	}, nil
 }
-func SendAppendEntryGRPC() error {
+func SendAppendEntryGRPC(entry pb.Entry) error {
 	addrs := "raft-node-"
 	cnt := 0
 	for i := 1; i < 6; i++ {
@@ -89,14 +89,7 @@ func SendAppendEntryGRPC() error {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
 
-			req := &pb.Entry{
-				LastLogTerm:  1,
-				LastLogIndex: 1,
-				Command:      "GET",
-				Key:          "key",
-				Value:        "value",
-			}
-			response, err := client.AppendEntries(ctx, req)
+			response, err := client.AppendEntries(ctx, &entry)
 
 			if err != nil {
 				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
@@ -162,11 +155,20 @@ func isMajority(count int) bool {
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
 	//Step 1 Append Entries to your own log
 	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
-	command := "ADD KEY = VALUE"
-	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s", index, term, command)
-	log.Printf("Index: %v, Term: %v, Command: %s", index, term, command)
+	command := "ADD"
+	key := req.Key
+	value := req.Value
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      "ADD",
+		Key:          req.Key,
+		Value:        req.Value,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC()
+	err := SendAppendEntryGRPC(entry)
 
 	// Check if majority Appened
 	if err != nil {

@@ -16,31 +16,33 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func New_Follower_Service(config *models.Config, timerOps chan enums.TimerOperations) Follower_Service {
+func NewFollowerService(config *models.Config, timerOps chan enums.TimerOperations, nodeRaftData *models.NodeRaftData) FollowerService {
 
-	return Follower_Service{
-		config:   config,
-		timerOps: timerOps,
+	return FollowerService{
+		config:       config,
+		timerOps:     timerOps,
+		nodeRaftData: nodeRaftData,
 	}
 }
 
-type Follower_Service struct {
+type FollowerService struct {
 	config             *models.Config
 	timerOps           chan enums.TimerOperations
 	followerController *grpc.Server
 	lis                net.Listener
+	nodeRaftData       *models.NodeRaftData
 }
 
-func (this *Follower_Service) StartFollowerService() {
+func (this *FollowerService) StartFollowerService() {
 	loggers.Raft.Println("Role Set to Follower")
-	this.followerController, this.lis = controller.StartFollowerController(this.timerOps)
+	this.followerController, this.lis = controller.StartFollowerController(this.timerOps, this.nodeRaftData)
 	this.StartElectionTimer()
 }
-func (this *Follower_Service) Close() {
+func (this *FollowerService) Close() {
 	this.followerController.Stop()
 	this.lis.Close()
 }
-func (this *Follower_Service) StartElectionTimer() {
+func (this *FollowerService) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
 	duration := 5 * time.Second
 	timer := time.NewTimer(duration)

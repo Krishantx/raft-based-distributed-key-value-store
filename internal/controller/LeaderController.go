@@ -25,8 +25,36 @@ type proxyToNode struct {
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "DELETE"
+	key := req.Key
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      command,
+		Key:          req.Key,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
+	s.raftNodeData.IncrementIndex()
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(entry)
+
+	// Check if majority Appened
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	// CommitEntries to the Logs of followers
+	err = SendCommitEntryGRPC()
+
+	if err != nil {
+		return &pb.Response{}, err
+	}
+	log.Println("Append To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
 	fmt.Print("Delete Key value")
-	err := s.repository.DeleteKeyValue(req.Key)
+	err = s.repository.DeleteKeyValue(req.Key)
 	if err != nil {
 		return &pb.Response{}, err
 	}
@@ -41,6 +69,37 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 }
 
 func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "PUT"
+	key := req.Key
+	value := req.Value
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      command,
+		Key:          req.Key,
+		Value:        req.Value,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	s.raftNodeData.IncrementIndex()
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(entry)
+
+	// Check if majority Appened
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	// CommitEntries to the Logs of followers
+	err = SendCommitEntryGRPC()
+
+	if err != nil {
+		return &pb.Response{}, err
+	}
+	log.Println("Append To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
+
 	keyValue, err := s.repository.UpdateKeyValue(req.Key, req.Value)
 	fmt.Print("Put Key value")
 	if err != nil {
@@ -161,11 +220,12 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	entry := pb.Entry{
 		LastLogIndex: s.raftNodeData.GetIndex(),
 		LastLogTerm:  s.raftNodeData.GetTerm(),
-		Command:      "ADD",
+		Command:      command,
 		Key:          req.Key,
 		Value:        req.Value,
 	}
 	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
 	err := SendAppendEntryGRPC(entry)
@@ -181,8 +241,8 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	if err != nil {
 		return &pb.Response{}, err
 	}
+	log.Println("Append To Leader Successful")
 	s.raftNodeData.IncrementCommitIndex()
-	s.raftNodeData.IncrementIndex()
 
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {

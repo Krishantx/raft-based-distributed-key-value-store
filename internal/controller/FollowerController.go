@@ -49,7 +49,6 @@ func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry)
 		}, nil
 	}
 
-	this.nodeRaftData.IncrementIndex()
 	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", this.nodeRaftData.GetIndex(), this.nodeRaftData.GetTerm(), reqCommand, reqKey, reqValue)
 
 	this.nodeRaftData.IncrementIndex()

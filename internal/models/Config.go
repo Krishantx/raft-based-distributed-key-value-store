@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// Change Role type to enum later
 type Config struct {
 	NodeName     string
 	ElectionTime int

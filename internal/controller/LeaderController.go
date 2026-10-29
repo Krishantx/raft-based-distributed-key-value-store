@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"raft-based-kv/internal/loggers"
+	"raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
 	"strconv"
@@ -19,12 +20,41 @@ import (
 
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
-	repository repository.Repo
+	repository   repository.Repo
+	raftNodeData models.NodeRaftData
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "DELETE"
+	key := req.Key
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      command,
+		Key:          req.Key,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
+	s.raftNodeData.IncrementIndex()
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(entry)
+
+	// Check if majority Appened
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	// CommitEntries to the Logs of followers
+	err = SendCommitEntryGRPC()
+
+	if err != nil {
+		return &pb.Response{}, err
+	}
+	log.Println("Append To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
 	fmt.Print("Delete Key value")
-	err := s.repository.DeleteKeyValue(req.Key)
+	err = s.repository.DeleteKeyValue(req.Key)
 	if err != nil {
 		return &pb.Response{}, err
 	}
@@ -39,6 +69,37 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 }
 
 func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "PUT"
+	key := req.Key
+	value := req.Value
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      command,
+		Key:          req.Key,
+		Value:        req.Value,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	s.raftNodeData.IncrementIndex()
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(entry)
+
+	// Check if majority Appened
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	// CommitEntries to the Logs of followers
+	err = SendCommitEntryGRPC()
+
+	if err != nil {
+		return &pb.Response{}, err
+	}
+	log.Println("Append To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
+
 	keyValue, err := s.repository.UpdateKeyValue(req.Key, req.Value)
 	fmt.Print("Put Key value")
 	if err != nil {
@@ -71,7 +132,7 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 		},
 	}, nil
 }
-func SendAppendEntryGRPC() error {
+func SendAppendEntryGRPC(entry pb.Entry) error {
 	addrs := "raft-node-"
 	cnt := 0
 	for i := 1; i < 6; i++ {
@@ -87,14 +148,7 @@ func SendAppendEntryGRPC() error {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
 
-			req := &pb.Entry{
-				LastLogTerm:  1,
-				LastLogIndex: 1,
-				Command:      "GET",
-				Key:          "key",
-				Value:        "value",
-			}
-			response, err := client.AppendEntries(ctx, req)
+			response, err := client.AppendEntries(ctx, &entry)
 
 			if err != nil {
 				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
@@ -158,28 +212,37 @@ func isMajority(count int) bool {
 }
 
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
-	// Info to also send along with the AppendEntries RPC
-
-	// 1. lastLogIndex, 2. lastTermIndex,
-	//Append Entries
-	//Send an commir entires RPC to followers
-	// Once majority appends entries commit entries
-	// Also maintain a commit index
-	// Create a gRPC Client
-
 	//Step 1 Append Entries to your own log
+	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
+	command := "ADD"
+	key := req.Key
+	value := req.Value
+	entry := pb.Entry{
+		LastLogIndex: s.raftNodeData.GetIndex(),
+		LastLogTerm:  s.raftNodeData.GetTerm(),
+		Command:      command,
+		Key:          req.Key,
+		Value:        req.Value,
+	}
+	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	s.raftNodeData.IncrementIndex()
+	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(entry)
 
-	loggers.Raft.Println("")
-	err := SendAppendEntryGRPC()
+	// Check if majority Appened
 	if err != nil {
 		return &pb.Response{}, err
 	}
 
+	// CommitEntries to the Logs of followers
 	err = SendCommitEntryGRPC()
 
 	if err != nil {
 		return &pb.Response{}, err
 	}
+	log.Println("Append To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
 
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
@@ -197,7 +260,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	}, nil
 }
 
-func StartLeaderController(repository repository.Repo) (*grpc.Server, net.Listener) {
+func StartLeaderController(repository repository.Repo, nodeRaftData models.NodeRaftData) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Could not listen on port 50051: %v", err)
@@ -205,7 +268,8 @@ func StartLeaderController(repository repository.Repo) (*grpc.Server, net.Listen
 
 	leaderController := grpc.NewServer()
 	pb.RegisterProxyToNodeServer(leaderController, &proxyToNode{
-		repository: repository,
+		repository:   repository,
+		raftNodeData: nodeRaftData,
 	})
 
 	fmt.Println("gRPC Listing on port: 50051")

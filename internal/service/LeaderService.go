@@ -42,7 +42,7 @@ func NewLeaderService(config models.Config, nodeRaftData models.NodeRaftData, re
 }
 
 func (s *LeaderService) StartLeaderService() {
-	s.controller, s.lis = controller.StartLeaderController(s.repo)
+	s.controller, s.lis = controller.StartLeaderController(s.repo, s.nodeRaftData)
 	loggers.Raft.Println("Role Set to Leader")
 	ticker := time.NewTicker(time.Second)
 	for {

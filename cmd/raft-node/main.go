@@ -10,6 +10,13 @@ import (
 )
 
 func main() {
+	// Use the Startup service to first
+	// create and use all the vars and
+	// struct. Then once that is d
+	log.Println("Creating the repository")
+	repo := repo.NewRepository()
+	log.Println("Starting the bootup service to preload the repository if required")
+	service.NewStartUpService().ModifyCurrentStateToLatestLog(*repo)
 	TimerOps := make(chan enums.TimerOperations)
 	config := models.Config{}
 	config.Init()
@@ -17,7 +24,6 @@ func main() {
 	nodeRaftData := models.NodeRaftData{}
 	nodeRaftData.Init()
 	loggers.Init()
-	repo := repo.NewRepository()
 	for {
 		if config.Role == enums.Follower {
 			log.Println("Role : Follower")

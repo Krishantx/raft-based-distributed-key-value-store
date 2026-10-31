@@ -31,8 +31,8 @@ func Init() {
 		log.Panicf("Cannot Open Log File: %v", err)
 	}
 
-	Heartbeat = log.New(HeartbeatFile, "[Heartbeat]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
-	Raft = log.New(raftFile, "[Raft]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
-	GRPC = log.New(GRPCFile, "[GRPC]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+	Heartbeat = log.New(HeartbeatFile, "[Heartbeat]", 0)
+	Raft = log.New(raftFile, "[Raft]", 0)
+	GRPC = log.New(GRPCFile, "[GRPC]", 0)
 
 }

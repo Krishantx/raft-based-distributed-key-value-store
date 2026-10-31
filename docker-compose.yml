@@ -10,6 +10,8 @@ services:
         role: Leader
         election_time: 5
     container_name: raft-node-1
+    volumes:
+      - ./data/raft-1:/app/logs/
 
   raft-2:
     build: 
@@ -20,6 +22,8 @@ services:
         role: Follower
         election_time: 5
     container_name: raft-node-2
+    volumes:
+      - ./data/raft-2:/app/logs/
   raft-3:
     build: 
       context: .
@@ -29,6 +33,8 @@ services:
         role: Follower
         election_time: 5
     container_name: raft-node-3
+    volumes:
+      - ./data/raft-3:/app/logs/
   raft-4:
     build: 
       context: .
@@ -38,6 +44,8 @@ services:
         role: Follower
         election_time: 5
     container_name: raft-node-4
+    volumes:
+      - ./data/raft-4:/app/logs/
   raft-5:
     build: 
       context: .
@@ -47,6 +55,8 @@ services:
         node_name: raft-node-5
         role: Follower
         election_time: 5
+    volumes:
+      - ./data/raft-5:/app/logs/
   
   raft-aware-proxy:
     build:
@@ -55,3 +65,5 @@ services:
     container_name: raft-aware-proxy
     ports: 
       - "8080:8080"
+    
+

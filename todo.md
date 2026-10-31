@@ -36,6 +36,9 @@
 
 ### On Startup
 - [ ] Load previous logs
+- [ ] So basically iterate through the logs and recreate whatever happened
+- [ ] Step 1: Persistent Volumes for all docker images
+- [ ] 
 
 
 ## Appending all logs

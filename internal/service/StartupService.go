@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"raft-based-kv/internal/repo"
@@ -22,13 +23,16 @@ func NewStartUpService(repository *repo.Repo) *StartupService {
 // Function name is not descriptive enough FIX LATER
 func (this *StartupService) ModifyCurrentStateToLatestLog() {
 	file, err := os.ReadFile("/app/logs/RaftLogs.log")
-	split := bytes.Split(file, []byte("[RAFT]"))
+	split := bytes.Split(file, []byte("\n"))
 	if err != nil {
 		log.Fatalf("Cannot Open the log file")
 	}
+	log.Println("=============== Inside the for loop ===================")
 	for _, log := range split {
+		fmt.Printf(string(log))
 		this.addLogToRepository(log)
 	}
+	log.Println("=============== the for loop end ===================")
 }
 
 func (this *StartupService) addLogToRepository(singleLog []byte) {
@@ -44,12 +48,15 @@ func (this *StartupService) addLogToRepository(singleLog []byte) {
 
 	switch logEntity.Command {
 	case "ADD":
+		log.Printf("Added %v", logEntity.Key)
 		this.repository.AddKeyValue(logEntity.Key, logEntity.Value)
 		break
 	case "DELETE":
+		log.Printf("DELETEed %v", logEntity.Key)
 		this.repository.DeleteKeyValue(logEntity.Key)
 		break
 	case "PUT":
+		log.Printf("Modified %v", logEntity.Key)
 		this.repository.UpdateKeyValue(logEntity.Key, logEntity.Value)
 		break
 	}

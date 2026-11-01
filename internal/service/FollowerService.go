@@ -7,7 +7,6 @@ import (
 	"net"
 	"raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
-	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
@@ -34,7 +33,6 @@ type FollowerService struct {
 }
 
 func (this *FollowerService) StartFollowerService() {
-	loggers.Raft.Println("Role Set to Follower")
 	this.followerController, this.lis = controller.StartFollowerController(this.timerOps, this.nodeRaftData)
 	this.StartElectionTimer()
 }

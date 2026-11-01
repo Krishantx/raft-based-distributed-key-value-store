@@ -8,7 +8,6 @@ import (
 	controller "raft-based-kv/internal/controller"
 
 	"log"
-	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
 	"time"
@@ -43,7 +42,6 @@ func NewLeaderService(config models.Config, nodeRaftData models.NodeRaftData, re
 
 func (s *LeaderService) StartLeaderService() {
 	s.controller, s.lis = controller.StartLeaderController(s.repo, s.nodeRaftData)
-	loggers.Raft.Println("Role Set to Leader")
 	ticker := time.NewTicker(time.Second)
 	for {
 		<-ticker.C

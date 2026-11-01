@@ -34,7 +34,7 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 		Command:      command,
 		Key:          req.Key,
 	}
-	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
+	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\"}", index, term, command, key)
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
 	// AppendEntries to Logs of the followers
@@ -80,7 +80,8 @@ func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 		Key:          req.Key,
 		Value:        req.Value,
 	}
-	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", index, term, command, key, value)
+
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
@@ -224,7 +225,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 		Key:          req.Key,
 		Value:        req.Value,
 	}
-	loggers.Raft.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
+	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", index, term, command, key, value)
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers

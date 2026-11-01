@@ -32,7 +32,7 @@ func Init() {
 	}
 
 	Heartbeat = log.New(HeartbeatFile, "[Heartbeat]", 0)
-	Raft = log.New(raftFile, "[Raft]", 0)
+	Raft = log.New(raftFile, "", 0)
 	GRPC = log.New(GRPCFile, "[GRPC]", 0)
 
 }

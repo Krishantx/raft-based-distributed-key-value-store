@@ -10,15 +10,11 @@ import (
 )
 
 func main() {
-	// Use the Startup service to first
-	// create and use all the vars and
-	// struct. Then once that is d
 	loggers.Init()
 	log.Println("Creating the repository for in memory storage")
 	repo := repo.NewRepository()
 	log.Println("Starting the bootup service to preload the repository, if required, and fetching previous memory state")
 	service.NewStartUpService(repo).ModifyCurrentStateToLatestLog()
-	TimerOps := make(chan enums.TimerOperations)
 	config := models.Config{}
 	config.Init()
 	log.Println("config role : " + config.Role)
@@ -27,7 +23,7 @@ func main() {
 	for {
 		if config.Role == enums.Follower {
 			log.Println("Role : Follower")
-			follower_service := service.NewFollowerService(&config, TimerOps, &nodeRaftData)
+			follower_service := service.NewFollowerService(&config, &nodeRaftData)
 			follower_service.StartFollowerService()
 			follower_service.Close()
 		} else if config.Role == enums.Leader {

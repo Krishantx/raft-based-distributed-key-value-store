@@ -15,12 +15,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewFollowerService(config *models.Config, timerOps chan enums.TimerOperations, nodeRaftData *models.NodeRaftData) FollowerService {
+func NewFollowerService(config *models.Config, nodeRaftData *models.NodeRaftData) FollowerService {
 
+	TimerOps := make(chan enums.TimerOperations)
 	return FollowerService{
 		config:       config,
-		timerOps:     timerOps,
 		nodeRaftData: nodeRaftData,
+		timerOps:     TimerOps,
 	}
 }
 

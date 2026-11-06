@@ -61,4 +61,4 @@
 ## Technical Debt and Code Cleanup:
 - [ ] Too many global vars are currently storing the same redundant information. These multiple widen possible places bugs can arise. Clean them up
 - [ ] Heartbeat is just an empty append request. Can reduce the amount of code I have to maintain.
-- [ ] Follower conttroller has 2 controllers `Server` and `RaftOperations` Server is just there for heartbeats. Can be merged into the same controller
+- [ ] Follower controller has 2 controllers `Server` and `RaftOperations` Server is just there for heartbeats. Can be merged into the same controller

@@ -69,5 +69,4 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		fmt.Println("Become Follower")
 		this.config.Role = enums.Follower
 	}
-
 }

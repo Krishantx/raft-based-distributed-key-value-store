@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
@@ -43,7 +44,7 @@ func (this *FollowerService) Close() {
 }
 func (this *FollowerService) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
-	duration := 5 * time.Second
+	duration := time.Duration(rand.Intn(5)) * time.Second
 	timer := time.NewTimer(duration)
 	for this.config.Role == enums.Follower {
 		select {

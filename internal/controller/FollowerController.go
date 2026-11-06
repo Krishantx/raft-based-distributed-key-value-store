@@ -25,6 +25,32 @@ type raftOperations struct {
 	repository   *repo.Repo
 }
 
+type voting struct {
+	pb.UnimplementedVotingServiceServer
+	nodeRaftData *models.NodeRaftData
+	timerOps     chan enums.TimerOperations
+}
+
+func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
+	fmt.Println("Starting Voting procedure")
+	this.timerOps <- enums.STOP
+	if req.Term <= int32(this.nodeRaftData.GetTerm()) {
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+
+	if req.Log < int32(this.nodeRaftData.GetIndex()) {
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+	this.timerOps <- enums.RESET
+	return &pb.Vote{
+		Vote: true,
+	}, nil
+}
+
 func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry) (*pb.IsAppended, error) {
 	lastLogIndex := this.nodeRaftData.GetIndex()
 	lastLogTerm := this.nodeRaftData.GetTerm()
@@ -82,6 +108,10 @@ func StartFollowerController(timerOps chan enums.TimerOperations, nodeRaftData *
 
 	followerServer := grpc.NewServer()
 
+	pb.RegisterVotingServiceServer(followerServer, &voting{
+		nodeRaftData: nodeRaftData,
+		timerOps:     timerOps,
+	})
 	pb.RegisterHeartbeatServiceServer(followerServer, &server{
 		timerOps: timerOps,
 	})
@@ -94,6 +124,5 @@ func StartFollowerController(timerOps chan enums.TimerOperations, nodeRaftData *
 			log.Fatalf("Error creating a gRPC server: %v", err)
 		}
 	}()
-
 	return followerServer, lis
 }

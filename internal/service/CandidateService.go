@@ -26,7 +26,6 @@ func NewCandidateService(config *models.Config) CandidateService {
 }
 
 func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaftData) {
-
 	req := &pb.NodeInfo{
 		Term: int32(nodeRaftData.GetTerm()),
 		Log:  int32(nodeRaftData.GetIndex()),

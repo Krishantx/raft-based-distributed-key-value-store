@@ -72,22 +72,26 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		}
 
 	}
+	voteCount := this.countVotes(&voteResponse)
+	this.config.Role = this.getRoleFromVoteCount(voteCount)
+}
 
-	// Count Votes and Become Leader if majority voted for you
+func (this *CandidateService) getRoleFromVoteCount(voteCount int) enums.Role {
+	if voteCount > 2 {
+		// Become Leader
+		fmt.Println("Became Leader")
+		return enums.Leader
+	} else {
+		fmt.Println("Become Follower")
+		return enums.Follower
+	}
+}
+func (this *CandidateService) countVotes(voteResponse *[5]pb.Vote) int {
 	voteCount := 0
 	for i := 0; i < 5; i++ {
 		if voteResponse[i].Vote == true {
 			voteCount++
 		}
 	}
-
-	if voteCount > 2 {
-		// Become Leader
-		fmt.Println("Became Leader")
-		this.config.Role = enums.Leader
-	} else {
-		// Become Follower
-		fmt.Println("Become Follower")
-		this.config.Role = enums.Follower
-	}
+	return voteCount
 }

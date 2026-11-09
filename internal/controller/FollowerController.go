@@ -10,6 +10,7 @@ import (
 	"raft-based-kv/internal/models"
 	"raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
+	"sync"
 
 	"google.golang.org/grpc"
 )
@@ -29,10 +30,14 @@ type voting struct {
 	pb.UnimplementedVotingServiceServer
 	nodeRaftData *models.NodeRaftData
 	timerOps     chan enums.TimerOperations
+	votingLock   sync.Mutex
 }
 
 func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
+	this.votingLock.Lock()
+	defer this.votingLock.Unlock()
 	fmt.Println("Starting Voting Procedure")
+
 	this.timerOps <- enums.STOP
 	if req.Term <= int32(this.nodeRaftData.GetTerm()) {
 		return &pb.Vote{

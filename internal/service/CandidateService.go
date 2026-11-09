@@ -47,6 +47,7 @@ func (this *CandidateService) getVoteFromFollwer(nodeHostname string, req *pb.No
 }
 
 func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaftData) {
+
 	log.Println("=========Candidate Service Started=========")
 
 	req := &pb.NodeInfo{
@@ -63,8 +64,13 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		res, err := this.getVoteFromFollwer(nodeHostname, req)
 		if err != nil {
 			log.Printf("Error recieving vote from node %v : %v", i, err)
+			voteResponse[i-1] = pb.Vote{
+				Vote: false,
+			}
+		} else {
+			voteResponse[i-1] = *res
 		}
-		voteResponse[i-1] = *res
+
 	}
 
 	// Count Votes and Become Leader if majority voted for you

@@ -59,7 +59,7 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		Log:  int32(nodeRaftData.GetIndex()),
 	}
 
-	voteResponse := [5]pb.Vote{}
+	voteResponse := [5]*pb.Vote{}
 
 	nodeRaftData.IncrementTerm()
 	//Gather Votes
@@ -68,11 +68,11 @@ func (this *CandidateService) StartCandidateService(nodeRaftData *models.NodeRaf
 		res, err := this.getVoteFromFollwer(nodeHostname, req)
 		if err != nil {
 			log.Printf("Error recieving vote from node %v : %v", i, err)
-			voteResponse[i-1] = pb.Vote{
+			voteResponse[i-1] = &pb.Vote{
 				Vote: false,
 			}
 		} else {
-			voteResponse[i-1] = *res
+			voteResponse[i-1] = res
 		}
 
 	}
@@ -90,7 +90,7 @@ func (this *CandidateService) getRoleFromVoteCount(voteCount int) enums.Role {
 		return enums.Follower
 	}
 }
-func (this *CandidateService) countVotes(voteResponse *[5]pb.Vote) int {
+func (this *CandidateService) countVotes(voteResponse *[5]*pb.Vote) int {
 	voteCount := 0
 	for i := 0; i < 5; i++ {
 		if voteResponse[i].Vote == true {

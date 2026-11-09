@@ -37,19 +37,22 @@ func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote
 	this.votingLock.Lock()
 	defer this.votingLock.Unlock()
 	fmt.Println("Starting Voting Procedure")
-
+	this.nodeRaftData.IncrementTerm()
 	this.timerOps <- enums.STOP
 	if req.Term <= int32(this.nodeRaftData.GetTerm()) {
+		this.timerOps <- enums.RESET
 		return &pb.Vote{
 			Vote: false,
 		}, nil
 	}
 
 	if req.Log < int32(this.nodeRaftData.GetIndex()) {
+		this.timerOps <- enums.RESET
 		return &pb.Vote{
 			Vote: false,
 		}, nil
 	}
+	log.Println("Sending a True vote in return")
 	this.timerOps <- enums.RESET
 	return &pb.Vote{
 		Vote: true,

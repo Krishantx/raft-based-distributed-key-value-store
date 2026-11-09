@@ -25,7 +25,7 @@ func (this *NodeRaftData) GetIndex() uint64 {
 }
 
 func (this *NodeRaftData) IncrementTerm() {
-	this.index = this.term + 1
+	this.term = this.term + 1
 }
 
 func (this *NodeRaftData) IncrementIndex() {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"raft-based-kv/internal/clients"
@@ -29,16 +30,19 @@ func NewCandidateService(config *models.Config) CandidateService {
 func (this *CandidateService) getVoteFromFollwer(nodeHostname string, req *pb.NodeInfo) (*pb.Vote, error) {
 	addr := nodeHostname + ":" + "50051"
 	if addr != this.config.NodeName+":50051" {
-		log.Printf("Sending a gRPC request to:  %v", addr)
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatalf("Failed to connect : %s: %v", addr, err)
-		}
-
-		client := pb.NewVotingServiceClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		res, err := client.StartVoting(ctx, req)
+		res := &pb.Vote{}
+		err := errors.New("")
+		go func() {
+			log.Printf("Sending a gRPC request to:  %v", addr)
+			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				log.Fatalf("Failed to connect : %s: %v", addr, err)
+			}
+			client := pb.NewVotingServiceClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			res, err = client.StartVoting(ctx, req)
+		}()
 		return res, err
 	}
 	return &pb.Vote{

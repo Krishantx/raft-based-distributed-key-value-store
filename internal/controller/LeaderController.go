@@ -21,7 +21,7 @@ import (
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
 	repository   repository.Repo
-	raftNodeData models.NodeRaftData
+	raftNodeData *models.NodeRaftData
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
@@ -261,7 +261,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	}, nil
 }
 
-func StartLeaderController(repository repository.Repo, nodeRaftData models.NodeRaftData) (*grpc.Server, net.Listener) {
+func StartLeaderController(repository repository.Repo, nodeRaftData *models.NodeRaftData) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Could not listen on port 50051: %v", err)

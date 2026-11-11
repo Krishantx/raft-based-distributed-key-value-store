@@ -63,7 +63,7 @@ func (this *LeaderService) grpcClient(addr string) {
 	response, err := client.ReceiveHeartbeat(ctx, req)
 
 	if err != nil {
-		log.Println("Error Sending Heartbear %s : %v", addr, err)
+		log.Printf("Error Sending Heartbear %s : %v", addr, err)
 	} else {
 		if int(response.Term) == this.term {
 			// fmt.Println("The current Term is correct and I am still the leader")

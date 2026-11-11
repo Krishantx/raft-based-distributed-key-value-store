@@ -3,9 +3,10 @@ package models
 import (
 	"fmt"
 	"os"
-	enums "raft-based-kv/internal/enums"
 	"strconv"
 	"strings"
+
+	enums "raft-based-kv/internal/enums"
 )
 
 type Config struct {

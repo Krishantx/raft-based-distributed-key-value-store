@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	service "raft-based-kv/cmd/raft-aware-proxy/service"
 	"raft-based-kv/internal/models"
 )
@@ -70,7 +71,12 @@ func (s *HTTPController) putKeyValue(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	keyValue, err := s.proxyService.PutKeyValue(payload.Key, payload.Value)
-	json.NewEncoder(w).Encode(keyValue)
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+	} else {
+		json.NewEncoder(w).Encode(keyValue)
+	}
+
 }
 func (s *HTTPController) deleteKeyValue(w http.ResponseWriter, req *http.Request) {
 	key := req.URL.Path[1:]

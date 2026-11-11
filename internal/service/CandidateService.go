@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
+	"time"
+
 	"raft-based-kv/internal/clients"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"strconv"
-	"time"
 
 	grpc "google.golang.org/grpc"
 	insecure "google.golang.org/grpc/credentials/insecure"
@@ -42,6 +43,9 @@ func (this *CandidateService) getVoteFromFollwer(nodeHostname string, req *pb.No
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
 			res, err = client.StartVoting(ctx, req)
+			if err != nil {
+				log.Printf("Error invoking function Start Voting : %v", err)
+			}
 		}()
 		return res, err
 	}

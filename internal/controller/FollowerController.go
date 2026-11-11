@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
+
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	"raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
-	"sync"
 
 	"google.golang.org/grpc"
 )

@@ -6,11 +6,12 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"time"
+
 	"raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

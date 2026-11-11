@@ -8,9 +8,10 @@ import (
 	controller "raft-based-kv/internal/controller"
 
 	"log"
+	"time"
+
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
 
 	repository "raft-based-kv/internal/repo"
 

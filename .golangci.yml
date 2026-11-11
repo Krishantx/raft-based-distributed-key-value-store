@@ -1,0 +1,25 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - govet
+    - ineffassign
+    - unconvert
+  exclusions:
+    generated: lax
+    paths:
+      - 'proto/.*'
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - raft-based-kv

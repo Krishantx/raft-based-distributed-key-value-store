@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+echo "==> format check"
+make "fmt-check"
+
+echo "==> go vet"
+make vet
+
+echo "==> lint"
+make lint
+
+echo "==> test"
+make test
+
+echo "==> build"
+make build

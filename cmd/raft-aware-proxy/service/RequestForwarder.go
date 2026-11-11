@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	pb "raft-based-kv/proto"
 	"time"
+
+	pb "raft-based-kv/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,11 +30,11 @@ type requestForwarder struct {
 
 func NewRequestForwarder() requestForwarder {
 	allNodeDetails := [5]nodeDetails{
-		nodeDetails{hostname: "raft-node-1", port: "50051"},
-		nodeDetails{hostname: "raft-node-2", port: "50051"},
-		nodeDetails{hostname: "raft-node-3", port: "50051"},
-		nodeDetails{hostname: "raft-node-4", port: "50051"},
-		nodeDetails{hostname: "raft-node-5", port: "50051"},
+		{hostname: "raft-node-1", port: "50051"},
+		{hostname: "raft-node-2", port: "50051"},
+		{hostname: "raft-node-3", port: "50051"},
+		{hostname: "raft-node-4", port: "50051"},
+		{hostname: "raft-node-5", port: "50051"},
 	}
 
 	return requestForwarder{

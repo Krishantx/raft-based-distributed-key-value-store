@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"raft-based-kv/internal/repo"
 	"strings"
+
+	"raft-based-kv/internal/repo"
 )
 
 type StartupService struct {
@@ -29,7 +30,7 @@ func (this *StartupService) ModifyCurrentStateToLatestLog() {
 	}
 	log.Println("=============== Inside the for loop ===================")
 	for _, log := range split {
-		fmt.Printf(string(log))
+		fmt.Println(string(log))
 		this.addLogToRepository(log)
 	}
 	log.Println("=============== the for loop end ===================")

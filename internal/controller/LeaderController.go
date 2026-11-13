@@ -7,12 +7,13 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
+	"time"
+
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
 	repository "raft-based-kv/internal/repo"
 	pb "raft-based-kv/proto"
-	"strconv"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,7 +22,7 @@ import (
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
 	repository   repository.Repo
-	raftNodeData models.NodeRaftData
+	raftNodeData *models.NodeRaftData
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
@@ -38,7 +39,7 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(entry)
+	err := SendAppendEntryGRPC(&entry)
 
 	// Check if majority Appened
 	if err != nil {
@@ -85,7 +86,7 @@ func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(entry)
+	err := SendAppendEntryGRPC(&entry)
 
 	// Check if majority Appened
 	if err != nil {
@@ -133,7 +134,7 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 		},
 	}, nil
 }
-func SendAppendEntryGRPC(entry pb.Entry) error {
+func SendAppendEntryGRPC(entry *pb.Entry) error {
 	addrs := "raft-node-"
 	cnt := 0
 	for i := 1; i < 6; i++ {
@@ -149,7 +150,7 @@ func SendAppendEntryGRPC(entry pb.Entry) error {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
 
-			response, err := client.AppendEntries(ctx, &entry)
+			response, err := client.AppendEntries(ctx, entry)
 
 			if err != nil {
 				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
@@ -229,7 +230,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(entry)
+	err := SendAppendEntryGRPC(&entry)
 
 	// Check if majority Appened
 	if err != nil {
@@ -261,7 +262,7 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	}, nil
 }
 
-func StartLeaderController(repository repository.Repo, nodeRaftData models.NodeRaftData) (*grpc.Server, net.Listener) {
+func StartLeaderController(repository repository.Repo, nodeRaftData *models.NodeRaftData) (*grpc.Server, net.Listener) {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Panicf("Could not listen on port 50051: %v", err)

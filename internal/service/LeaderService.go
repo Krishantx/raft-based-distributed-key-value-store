@@ -8,9 +8,10 @@ import (
 	controller "raft-based-kv/internal/controller"
 
 	"log"
+	"time"
+
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
 
 	repository "raft-based-kv/internal/repo"
 
@@ -23,14 +24,14 @@ import (
 type LeaderService struct {
 	node_name    string
 	term         int
-	conf         models.Config
-	nodeRaftData models.NodeRaftData
+	conf         *models.Config
+	nodeRaftData *models.NodeRaftData
 	repo         repository.Repo
 	controller   *grpc.Server
 	lis          net.Listener
 }
 
-func NewLeaderService(config models.Config, nodeRaftData models.NodeRaftData, repo repository.Repo) LeaderService {
+func NewLeaderService(config *models.Config, nodeRaftData *models.NodeRaftData, repo repository.Repo) LeaderService {
 	return LeaderService{
 		node_name:    config.NodeName,
 		term:         1,
@@ -63,7 +64,7 @@ func (this *LeaderService) grpcClient(addr string) {
 	response, err := client.ReceiveHeartbeat(ctx, req)
 
 	if err != nil {
-		log.Println("Error Sending Heartbear %s : %v", addr, err)
+		log.Printf("Error Sending Heartbear %s : %v", addr, err)
 	} else {
 		if int(response.Term) == this.term {
 			// fmt.Println("The current Term is correct and I am still the leader")
@@ -82,7 +83,7 @@ func (this *LeaderService) SendHeartbeat() {
 	addrs := "raft-node-"
 	for i := 1; i < 6; i++ {
 		addr := addrs + strconv.Itoa(i) + ":50051"
-		if addr != this.node_name+":50051" {
+		if addr != this.conf.NodeName+":50051" {
 			go this.grpcClient(addr)
 		}
 	}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
+
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	"raft-based-kv/internal/models"
@@ -23,6 +25,39 @@ type raftOperations struct {
 	pb.UnimplementedRaftOperationsServer
 	nodeRaftData *models.NodeRaftData
 	repository   *repo.Repo
+}
+
+type voting struct {
+	pb.UnimplementedVotingServiceServer
+	nodeRaftData *models.NodeRaftData
+	timerOps     chan enums.TimerOperations
+	votingLock   sync.Mutex
+}
+
+func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
+	this.votingLock.Lock()
+	defer this.votingLock.Unlock()
+	fmt.Println("Starting Voting Procedure")
+	this.nodeRaftData.IncrementTerm()
+	this.timerOps <- enums.STOP
+	if req.Term <= int32(this.nodeRaftData.GetTerm()) {
+		this.timerOps <- enums.RESET
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+
+	if req.Log < int32(this.nodeRaftData.GetIndex()) {
+		this.timerOps <- enums.RESET
+		return &pb.Vote{
+			Vote: false,
+		}, nil
+	}
+	log.Println("Sending a True vote in return")
+	this.timerOps <- enums.RESET
+	return &pb.Vote{
+		Vote: true,
+	}, nil
 }
 
 func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry) (*pb.IsAppended, error) {
@@ -82,6 +117,10 @@ func StartFollowerController(timerOps chan enums.TimerOperations, nodeRaftData *
 
 	followerServer := grpc.NewServer()
 
+	pb.RegisterVotingServiceServer(followerServer, &voting{
+		nodeRaftData: nodeRaftData,
+		timerOps:     timerOps,
+	})
 	pb.RegisterHeartbeatServiceServer(followerServer, &server{
 		timerOps: timerOps,
 	})
@@ -94,6 +133,5 @@ func StartFollowerController(timerOps chan enums.TimerOperations, nodeRaftData *
 			log.Fatalf("Error creating a gRPC server: %v", err)
 		}
 	}()
-
 	return followerServer, lis
 }

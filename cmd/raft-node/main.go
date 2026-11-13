@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
 	models "raft-based-kv/internal/models"
@@ -27,7 +28,7 @@ func main() {
 			follower_service.StartFollowerService()
 			follower_service.Close()
 		} else if config.Role == enums.Leader {
-			leader_service := service.NewLeaderService(config, nodeRaftData, *repo)
+			leader_service := service.NewLeaderService(&config, &nodeRaftData, *repo)
 			log.Println("Role : Leader")
 			leader_service.StartLeaderService()
 			leader_service.Close()

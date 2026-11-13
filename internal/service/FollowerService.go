@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
+
 	"raft-based-kv/internal/controller"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -43,7 +45,7 @@ func (this *FollowerService) Close() {
 }
 func (this *FollowerService) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
-	duration := 5 * time.Second
+	duration := time.Duration(rand.Intn(5-3)+3) * time.Second
 	timer := time.NewTimer(duration)
 	for this.config.Role == enums.Follower {
 		select {

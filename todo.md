@@ -35,10 +35,10 @@
 
 
 ### On Startup
-- [ ] Load previous logs
-- [ ] So basically iterate through the logs and recreate whatever happened
-- [ ] Step 1: Persistent Volumes for all docker images
-- [ ] 
+- [DONE] Load previous logs
+- [DONE] So basically iterate through the logs and recreate whatever happened
+- [DONE] Step 1: Persistent Volumes for all docker images
+- [DONE] Iterate through the entire logs and modify the repository. 
 
 
 ## Appending all logs
@@ -49,3 +49,16 @@
 
 ## Candidate Role
 * This will be the death of me
+
+
+## New Leader Election on dead leader nodes
+- [ ] Step 1 - Detection on dead leaders, a follower once not received a timeout would assume that the leader is dead and become a candidate.
+- [ ] Step 2 - The candidate would send a gRPC request to all the follower nodes asking them to vote.
+- [ ] Step 3 - The followers would then compare the candidates indexes and term to its own index and term.
+- [ ] Step 4 - A follower would only  vote for a new leader if the `candidateIndex >= followerIndex` AND  `candidateTerm >= followerTerm`. Regardless a node can only vote once per term, So even if it votes false. It would need to increment its term.
+- [ ] Step 5 - If the candidate receives a majority of votes. It becomes the leader and working like a leader
+
+## Technical Debt and Code Cleanup:
+- [ ] Too many global vars are currently storing the same redundant information. These multiple widen possible places bugs can arise. Clean them up
+- [ ] Heartbeat is just an empty append request. Can reduce the amount of code I have to maintain.
+- [ ] Follower controller has 2 controllers `Server` and `RaftOperations` Server is just there for heartbeats. Can be merged into the same controller

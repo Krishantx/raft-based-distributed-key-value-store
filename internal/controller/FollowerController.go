@@ -37,15 +37,18 @@ type voting struct {
 func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote, error) {
 	this.votingLock.Lock()
 	defer this.votingLock.Unlock()
-	fmt.Println("Starting Voting Procedure")
-	this.nodeRaftData.IncrementTerm()
+	fmt.Println("========Starting Voting Procedure=========")
 	this.timerOps <- enums.STOP
+	log.Println("=========Paused the heartbeat timer to vote========")
+	log.Printf("My term: %v, Incoming Term: %v", this.nodeRaftData.GetTerm(), req.Term)
 	if req.Term <= int32(this.nodeRaftData.GetTerm()) {
 		this.timerOps <- enums.RESET
 		return &pb.Vote{
 			Vote: false,
 		}, nil
 	}
+
+	this.nodeRaftData.SetTerm(uint64(req.Term))
 
 	if req.Log < int32(this.nodeRaftData.GetIndex()) {
 		this.timerOps <- enums.RESET

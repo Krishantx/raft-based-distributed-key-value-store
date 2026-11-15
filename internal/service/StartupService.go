@@ -12,12 +12,14 @@ import (
 )
 
 type StartupService struct {
-	repository *repo.Repo
+	repository       *repo.Repo
+	offsetRepository *[]uint64
 }
 
-func NewStartUpService(repository *repo.Repo) *StartupService {
+func NewStartUpService(repository *repo.Repo, offsetRepository *[]uint64) *StartupService {
 	return &StartupService{
-		repository: repository,
+		repository:       repository,
+		offsetRepository: offsetRepository,
 	}
 }
 
@@ -28,12 +30,15 @@ func (this *StartupService) ModifyCurrentStateToLatestLog() {
 	if err != nil {
 		log.Fatalf("Cannot Open the log file")
 	}
-	log.Println("=============== Inside the for loop ===================")
+	var offset uint64 = 0
+	i := 0
 	for _, log := range split {
+		(*this.offsetRepository)[i] = offset
+		i++
+		offset += uint64(len(log)) + 1
 		fmt.Println(string(log))
 		this.addLogToRepository(log)
 	}
-	log.Println("=============== the for loop end ===================")
 }
 
 func (this *StartupService) addLogToRepository(singleLog []byte) {

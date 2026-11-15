@@ -12,15 +12,20 @@ import (
 
 func main() {
 	loggers.Init()
+	// Log offset repository for each index
+	var offsetRepository []uint64 = make([]uint64, 100000)
 	log.Println("Creating the repository for in memory storage")
 	repo := repo.NewRepository()
 	log.Println("Starting the bootup service to preload the repository, if required, and fetching previous memory state")
-	service.NewStartUpService(repo).ModifyCurrentStateToLatestLog()
+	service.NewStartUpService(repo, &offsetRepository).ModifyCurrentStateToLatestLog()
 	config := models.Config{}
 	config.Init()
 	log.Println("config role : " + config.Role)
 	nodeRaftData := models.NodeRaftData{}
 	nodeRaftData.Init()
+	for i := 0; i < len(offsetRepository); i++ {
+		log.Printf("Index: %v, Offset: %v", i, offsetRepository[i])
+	}
 	for {
 		if config.Role == enums.Follower {
 			log.Println("Role : Follower")

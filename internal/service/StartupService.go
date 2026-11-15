@@ -13,10 +13,10 @@ import (
 
 type StartupService struct {
 	repository       *repo.Repo
-	offsetRepository *[]uint64
+	offsetRepository *repo.Offset_repository
 }
 
-func NewStartUpService(repository *repo.Repo, offsetRepository *[]uint64) *StartupService {
+func NewStartUpService(repository *repo.Repo, offsetRepository *repo.Offset_repository) *StartupService {
 	return &StartupService{
 		repository:       repository,
 		offsetRepository: offsetRepository,
@@ -33,7 +33,7 @@ func (this *StartupService) ModifyCurrentStateToLatestLog() {
 	var offset uint64 = 0
 	i := 0
 	for _, log := range split {
-		(*this.offsetRepository)[i] = offset
+		this.offsetRepository.AppendOffset(uint64(i), offset)
 		i++
 		offset += uint64(len(log)) + 1
 		fmt.Println(string(log))

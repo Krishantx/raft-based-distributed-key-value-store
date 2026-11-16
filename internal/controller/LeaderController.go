@@ -25,6 +25,57 @@ type proxyToNode struct {
 	raftNodeData *models.NodeRaftData
 }
 
+func appendToSelf(logEntry *pb.Entry, nrd *models.NodeRaftData) {
+	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", logEntry.LastLogIndex+1, logEntry.LastLogTerm, logEntry.Command, logEntry.Key, logEntry.Value)
+	nrd.IncrementIndex()
+}
+
+func logEntryBuilder(rnd *models.NodeRaftData, c string, k string, v string) pb.Entry {
+	return pb.Entry{
+		LastLogIndex: rnd.GetIndex(),
+		LastLogTerm:  rnd.GetTerm(),
+		Command:      c,
+		Key:          k,
+		Value:        v,
+	}
+}
+
+func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
+	// Build a pb.Entry obj
+	entry := logEntryBuilder(s.raftNodeData, "ADD", req.Key, req.Value)
+
+	appendToSelf(&entry, s.raftNodeData)
+	// AppendEntries to Logs of the followers
+	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
+	// Check if majority Appened
+	if err != nil {
+		return &pb.Response{}, err
+	}
+
+	// CommitEntries to the Logs of followers
+	err = SendCommitEntryGRPC()
+	if err != nil {
+		return &pb.Response{}, err
+	}
+	log.Println("Commit To Leader Successful")
+	s.raftNodeData.IncrementCommitIndex()
+
+	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
+	if err != nil {
+
+		return &pb.Response{}, err
+	}
+	return &pb.Response{
+		Result: &pb.Response_KeyValue{
+			KeyValue: &pb.KeyValue{
+				Term:  1,
+				Key:   keyValue.Key,
+				Value: keyValue.Value,
+			},
+		},
+	}, nil
+}
+
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
 	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
 	command := "DELETE"
@@ -37,10 +88,8 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 	}
 	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\"}", index, term, command, key)
 	s.raftNodeData.IncrementIndex()
-	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s", index, term, command, key)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(&entry)
-
+	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
 	// Check if majority Appened
 	if err != nil {
 		return &pb.Response{}, err
@@ -52,9 +101,7 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 	if err != nil {
 		return &pb.Response{}, err
 	}
-	log.Println("Append To Leader Successful")
 	s.raftNodeData.IncrementCommitIndex()
-	fmt.Print("Delete Key value")
 	err = s.repository.DeleteKeyValue(req.Key)
 	if err != nil {
 		return &pb.Response{}, err
@@ -62,7 +109,7 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
-				Term: 1,
+				Term: int32(s.raftNodeData.GetTerm()),
 				Key:  req.Key,
 			},
 		},
@@ -86,10 +133,14 @@ func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	s.raftNodeData.IncrementIndex()
 	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(&entry)
+	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
 
 	// Check if majority Appened
 	if err != nil {
+		if err == errors.New("Node is too far behind and needs to catch up") {
+			log.Println("======Bring Follower state to fresh data========")
+			UpdateFollowerState()
+		}
 		return &pb.Response{}, err
 	}
 
@@ -110,7 +161,7 @@ func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
-				Term:  1,
+				Term:  int32(s.raftNodeData.GetTerm()),
 				Key:   keyValue.Key,
 				Value: keyValue.Value,
 			},
@@ -127,14 +178,17 @@ func (s *proxyToNode) GetKeyValue(ctx context.Context, req *pb.Key) (*pb.Respons
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
-				Term:  1,
+				Term:  int32(s.raftNodeData.GetTerm()),
 				Key:   keyValue.Key,
 				Value: keyValue.Value,
 			},
 		},
 	}, nil
 }
-func SendAppendEntryGRPC(entry *pb.Entry) error {
+func UpdateFollowerState() {
+}
+
+func SendAppendEntryGRPC(entry *pb.Entry, nodeRaftData *models.NodeRaftData) error {
 	addrs := "raft-node-"
 	cnt := 0
 	for i := 1; i < 6; i++ {
@@ -158,6 +212,10 @@ func SendAppendEntryGRPC(entry *pb.Entry) error {
 				fmt.Print(response)
 				if response.IsAppended {
 					cnt++
+				} else {
+					if response.LastCommitIndex < nodeRaftData.GetCommitIndex() {
+						return errors.New("Node is too far behind and needs to catch up")
+					}
 				}
 			}
 		}
@@ -211,55 +269,6 @@ func SendCommitEntryGRPC() error {
 func isMajority(count int) bool {
 	totalNodes := 5 //Hardcoded for now, maybe scale later?
 	return count > (totalNodes / 2)
-}
-
-func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
-	//Step 1 Append Entries to your own log
-	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
-	command := "ADD"
-	key := req.Key
-	value := req.Value
-	entry := pb.Entry{
-		LastLogIndex: s.raftNodeData.GetIndex(),
-		LastLogTerm:  s.raftNodeData.GetTerm(),
-		Command:      command,
-		Key:          req.Key,
-		Value:        req.Value,
-	}
-	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", index, term, command, key, value)
-	s.raftNodeData.IncrementIndex()
-	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
-	// AppendEntries to Logs of the followers
-	err := SendAppendEntryGRPC(&entry)
-
-	// Check if majority Appened
-	if err != nil {
-		return &pb.Response{}, err
-	}
-
-	// CommitEntries to the Logs of followers
-	err = SendCommitEntryGRPC()
-
-	if err != nil {
-		return &pb.Response{}, err
-	}
-	log.Println("Append To Leader Successful")
-	s.raftNodeData.IncrementCommitIndex()
-
-	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
-	if err != nil {
-
-		return &pb.Response{}, err
-	}
-	return &pb.Response{
-		Result: &pb.Response_KeyValue{
-			KeyValue: &pb.KeyValue{
-				Term:  1,
-				Key:   keyValue.Key,
-				Value: keyValue.Value,
-			},
-		},
-	}, nil
 }
 
 func StartLeaderController(repository repository.Repo, nodeRaftData *models.NodeRaftData) (*grpc.Server, net.Listener) {

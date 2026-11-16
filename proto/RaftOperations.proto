@@ -17,6 +17,7 @@ message Entry {
 
 message IsAppended {
   bool IsAppended = 1;
+  uint64 lastCommitIndex = 2;
 }
 
 message IsCommited {

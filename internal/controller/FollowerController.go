@@ -76,14 +76,16 @@ func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry)
 	if reqLastLogTerm < lastLogTerm {
 		log.Println("The Request Comes from a stale leader and is ignored")
 		return &pb.IsAppended{
-			IsAppended: false,
+			IsAppended:      false,
+			LastCommitIndex: this.nodeRaftData.GetIndex(),
 		}, nil
 	}
 
 	if reqLastLogIndex != lastLogIndex {
 		log.Println("I have missed few indexes and need to catch up")
 		return &pb.IsAppended{
-			IsAppended: false,
+			IsAppended:      false,
+			LastCommitIndex: this.nodeRaftData.GetIndex(),
 		}, nil
 	}
 
@@ -92,7 +94,8 @@ func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry)
 	this.nodeRaftData.IncrementIndex()
 
 	return &pb.IsAppended{
-		IsAppended: true,
+		IsAppended:      true,
+		LastCommitIndex: this.nodeRaftData.GetIndex(),
 	}, nil
 }
 

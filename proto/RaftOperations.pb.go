@@ -7,12 +7,11 @@
 package proto
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -99,10 +98,11 @@ func (x *Entry) GetValue() string {
 }
 
 type IsAppended struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IsAppended    bool                   `protobuf:"varint,1,opt,name=IsAppended,proto3" json:"IsAppended,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	IsAppended      bool                   `protobuf:"varint,1,opt,name=IsAppended,proto3" json:"IsAppended,omitempty"`
+	LastCommitIndex uint64                 `protobuf:"varint,2,opt,name=lastCommitIndex,proto3" json:"lastCommitIndex,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *IsAppended) Reset() {
@@ -140,6 +140,13 @@ func (x *IsAppended) GetIsAppended() bool {
 		return x.IsAppended
 	}
 	return false
+}
+
+func (x *IsAppended) GetLastCommitIndex() uint64 {
+	if x != nil {
+		return x.LastCommitIndex
+	}
+	return 0
 }
 
 type IsCommited struct {
@@ -196,12 +203,13 @@ const file_proto_RaftOperations_proto_rawDesc = "" +
 	"\flastLogIndex\x18\x02 \x01(\x04R\flastLogIndex\x12\x18\n" +
 	"\acommand\x18\x03 \x01(\tR\acommand\x12\x10\n" +
 	"\x03key\x18\x04 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x05 \x01(\tR\x05value\",\n" +
+	"\x05value\x18\x05 \x01(\tR\x05value\"V\n" +
 	"\n" +
 	"IsAppended\x12\x1e\n" +
 	"\n" +
 	"IsAppended\x18\x01 \x01(\bR\n" +
-	"IsAppended\",\n" +
+	"IsAppended\x12(\n" +
+	"\x0flastCommitIndex\x18\x02 \x01(\x04R\x0flastCommitIndex\",\n" +
 	"\n" +
 	"IsCommited\x12\x1e\n" +
 	"\n" +

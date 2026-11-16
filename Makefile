@@ -4,7 +4,7 @@ GO ?= go
 GOBIN := $(shell $(GO) env GOPATH)/bin
 GOIMPORTS ?= $(GOBIN)/goimports
 GOLANGCI ?= $(GOBIN)/golangci-lint
-
+GO_FILES := $(shell find . -name '*.go' -not -path './vendor/*')
 LOCAL_PREFIX := raft-based-kv
 
 .PHONY: all fmt fmt-check vet lint test test-race build check install-tools hooks
@@ -18,7 +18,7 @@ fmt:
 fmt-check:
 	@out=$$(gofmt -l .); \
 	if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
-	@out=$$($(GOIMPORTS) -local $(LOCAL_PREFIX) -l .); \
+	@out=$$($(GOIMPORTS) -local $(LOCAL_PREFIX) -l .) | grep -v '\.pb\.go$$'; \
 	if [ -n "$$out" ]; then echo "goimports needed:"; echo "$$out"; exit 1; fi
 
 vet:

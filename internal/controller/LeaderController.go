@@ -43,7 +43,6 @@ func logEntryBuilder(rnd *models.NodeRaftData, c string, k string, v string) pb.
 func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
 	// Build a pb.Entry obj
 	entry := logEntryBuilder(s.raftNodeData, "ADD", req.Key, req.Value)
-
 	appendToSelf(&entry, s.raftNodeData)
 	// AppendEntries to Logs of the followers
 	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
@@ -62,13 +61,13 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)
 	if err != nil {
-
 		return &pb.Response{}, err
 	}
+
 	return &pb.Response{
 		Result: &pb.Response_KeyValue{
 			KeyValue: &pb.KeyValue{
-				Term:  1,
+				Term:  int32(s.raftNodeData.GetTerm()),
 				Key:   keyValue.Key,
 				Value: keyValue.Value,
 			},
@@ -77,17 +76,10 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 }
 
 func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Response, error) {
-	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
-	command := "DELETE"
-	key := req.Key
-	entry := pb.Entry{
-		LastLogIndex: s.raftNodeData.GetIndex(),
-		LastLogTerm:  s.raftNodeData.GetTerm(),
-		Command:      command,
-		Key:          req.Key,
-	}
-	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\"}", index, term, command, key)
-	s.raftNodeData.IncrementIndex()
+	entry := logEntryBuilder(s.raftNodeData, "DELETE", req.Key, "")
+
+	appendToSelf(&entry, s.raftNodeData)
+
 	// AppendEntries to Logs of the followers
 	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
 	// Check if majority Appened
@@ -117,21 +109,9 @@ func (s *proxyToNode) DeleteKeyValue(ctx context.Context, req *pb.Key) (*pb.Resp
 }
 
 func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Response, error) {
-	index, term := s.raftNodeData.GetIndex(), s.raftNodeData.GetTerm()
-	command := "PUT"
-	key := req.Key
-	value := req.Value
-	entry := pb.Entry{
-		LastLogIndex: s.raftNodeData.GetIndex(),
-		LastLogTerm:  s.raftNodeData.GetTerm(),
-		Command:      command,
-		Key:          req.Key,
-		Value:        req.Value,
-	}
-	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", index, term, command, key, value)
+	entry := logEntryBuilder(s.raftNodeData, "PUT", req.Key, req.Value)
+	appendToSelf(&entry, s.raftNodeData)
 
-	s.raftNodeData.IncrementIndex()
-	log.Printf("Index: %v, Term: %v, Command: %s, Key: %s, Value: %s", index, term, command, key, value)
 	// AppendEntries to Logs of the followers
 	err := SendAppendEntryGRPC(&entry, s.raftNodeData)
 
@@ -139,6 +119,8 @@ func (s *proxyToNode) PutKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	if err != nil {
 		if err == errors.New("Node is too far behind and needs to catch up") {
 			log.Println("======Bring Follower state to fresh data========")
+
+			// Pending Implementation
 			UpdateFollowerState()
 		}
 		return &pb.Response{}, err

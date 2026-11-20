@@ -18,7 +18,6 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/experimental/balancer/hostname"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -113,6 +112,8 @@ func followerIndexRecovery(nrd *models.NodeRaftData) {
 	if err != nil {
 		return
 	}
+
+	log.Printf("Leader Client Found")
 	// Ask the leader what its commit index is
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

@@ -17,16 +17,24 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type leaderRaftOperations struct {
 	pb.UnimplementedRaftOperationsServer
+	raftNodeData *models.NodeRaftData
 }
 
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
 	repository   repository.Repo
 	raftNodeData *models.NodeRaftData
+}
+
+func (l *leaderRaftOperations) GetRole(ctx context.Context, req *emptypb.Empty) (*pb.Role, error) {
+	return &pb.Role{
+		NodeRole: "leader",
+	}, nil
 }
 
 func appendToSelf(logEntry *pb.Entry, nrd *models.NodeRaftData) {
@@ -183,7 +191,7 @@ func SendAppendEntryGRPC(entry *pb.Entry, nodeRaftData *models.NodeRaftData) err
 
 			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
-				log.Fatalf("Failed to connect : %s: %v", addr, err)
+				log.Printf("Failed to connect : %s: %v", addr, err)
 			}
 
 			client := pb.NewRaftOperationsClient(conn)
@@ -193,7 +201,7 @@ func SendAppendEntryGRPC(entry *pb.Entry, nodeRaftData *models.NodeRaftData) err
 			response, err := client.AppendEntries(ctx, entry)
 
 			if err != nil {
-				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
+				log.Printf("Error Sending AppendEntries %s : %v", addr, err)
 			} else {
 				fmt.Print(response)
 				if response.IsAppended {
@@ -238,7 +246,7 @@ func SendCommitEntryGRPC() error {
 			response, err := client.CommitEntry(ctx, req)
 
 			if err != nil {
-				log.Fatalf("Error Sending AppendEntries %s : %v", addr, err)
+				log.Printf("Error Sending AppendEntries %s : %v", addr, err)
 			} else {
 				fmt.Print(response)
 				if response.IsCommited {
@@ -268,7 +276,9 @@ func StartLeaderController(repository repository.Repo, nodeRaftData *models.Node
 		repository:   repository,
 		raftNodeData: nodeRaftData,
 	})
-	pb.RegisterRaftOperationsServer(leaderController, &leaderRaftOperations{})
+	pb.RegisterRaftOperationsServer(leaderController, &leaderRaftOperations{
+		raftNodeData: nodeRaftData,
+	})
 	fmt.Println("gRPC Listing on port: 50051")
 	go func() {
 		err = leaderController.Serve(lis)

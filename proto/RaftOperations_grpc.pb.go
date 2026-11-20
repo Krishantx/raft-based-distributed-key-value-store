@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,8 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RaftOperations_AppendEntries_FullMethodName = "/RaftOperations/AppendEntries"
-	RaftOperations_CommitEntry_FullMethodName   = "/RaftOperations/CommitEntry"
+	RaftOperations_AppendEntries_FullMethodName        = "/RaftOperations/AppendEntries"
+	RaftOperations_CommitEntry_FullMethodName          = "/RaftOperations/CommitEntry"
+	RaftOperations_GetRole_FullMethodName              = "/RaftOperations/GetRole"
+	RaftOperations_GetLastCommitIndex_FullMethodName   = "/RaftOperations/GetLastCommitIndex"
+	RaftOperations_BulkAppendLogEntries_FullMethodName = "/RaftOperations/BulkAppendLogEntries"
 )
 
 // RaftOperationsClient is the client API for RaftOperations service.
@@ -29,6 +33,9 @@ const (
 type RaftOperationsClient interface {
 	AppendEntries(ctx context.Context, in *Entry, opts ...grpc.CallOption) (*IsAppended, error)
 	CommitEntry(ctx context.Context, in *Entry, opts ...grpc.CallOption) (*IsCommited, error)
+	GetRole(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Role, error)
+	GetLastCommitIndex(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*LastCommitIndex, error)
+	BulkAppendLogEntries(ctx context.Context, in *BulkAppendRequest, opts ...grpc.CallOption) (*BulkAppendResponse, error)
 }
 
 type raftOperationsClient struct {
@@ -59,12 +66,45 @@ func (c *raftOperationsClient) CommitEntry(ctx context.Context, in *Entry, opts 
 	return out, nil
 }
 
+func (c *raftOperationsClient) GetRole(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Role, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Role)
+	err := c.cc.Invoke(ctx, RaftOperations_GetRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *raftOperationsClient) GetLastCommitIndex(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*LastCommitIndex, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LastCommitIndex)
+	err := c.cc.Invoke(ctx, RaftOperations_GetLastCommitIndex_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *raftOperationsClient) BulkAppendLogEntries(ctx context.Context, in *BulkAppendRequest, opts ...grpc.CallOption) (*BulkAppendResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BulkAppendResponse)
+	err := c.cc.Invoke(ctx, RaftOperations_BulkAppendLogEntries_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RaftOperationsServer is the server API for RaftOperations service.
 // All implementations must embed UnimplementedRaftOperationsServer
 // for forward compatibility.
 type RaftOperationsServer interface {
 	AppendEntries(context.Context, *Entry) (*IsAppended, error)
 	CommitEntry(context.Context, *Entry) (*IsCommited, error)
+	GetRole(context.Context, *emptypb.Empty) (*Role, error)
+	GetLastCommitIndex(context.Context, *emptypb.Empty) (*LastCommitIndex, error)
+	BulkAppendLogEntries(context.Context, *BulkAppendRequest) (*BulkAppendResponse, error)
 	mustEmbedUnimplementedRaftOperationsServer()
 }
 
@@ -80,6 +120,15 @@ func (UnimplementedRaftOperationsServer) AppendEntries(context.Context, *Entry) 
 }
 func (UnimplementedRaftOperationsServer) CommitEntry(context.Context, *Entry) (*IsCommited, error) {
 	return nil, status.Error(codes.Unimplemented, "method CommitEntry not implemented")
+}
+func (UnimplementedRaftOperationsServer) GetRole(context.Context, *emptypb.Empty) (*Role, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRole not implemented")
+}
+func (UnimplementedRaftOperationsServer) GetLastCommitIndex(context.Context, *emptypb.Empty) (*LastCommitIndex, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLastCommitIndex not implemented")
+}
+func (UnimplementedRaftOperationsServer) BulkAppendLogEntries(context.Context, *BulkAppendRequest) (*BulkAppendResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BulkAppendLogEntries not implemented")
 }
 func (UnimplementedRaftOperationsServer) mustEmbedUnimplementedRaftOperationsServer() {}
 func (UnimplementedRaftOperationsServer) testEmbeddedByValue()                        {}
@@ -138,6 +187,60 @@ func _RaftOperations_CommitEntry_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RaftOperations_GetRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RaftOperationsServer).GetRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RaftOperations_GetRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RaftOperationsServer).GetRole(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RaftOperations_GetLastCommitIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RaftOperationsServer).GetLastCommitIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RaftOperations_GetLastCommitIndex_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RaftOperationsServer).GetLastCommitIndex(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RaftOperations_BulkAppendLogEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkAppendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RaftOperationsServer).BulkAppendLogEntries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RaftOperations_BulkAppendLogEntries_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RaftOperationsServer).BulkAppendLogEntries(ctx, req.(*BulkAppendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RaftOperations_ServiceDesc is the grpc.ServiceDesc for RaftOperations service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +255,18 @@ var RaftOperations_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CommitEntry",
 			Handler:    _RaftOperations_CommitEntry_Handler,
+		},
+		{
+			MethodName: "GetRole",
+			Handler:    _RaftOperations_GetRole_Handler,
+		},
+		{
+			MethodName: "GetLastCommitIndex",
+			Handler:    _RaftOperations_GetLastCommitIndex_Handler,
+		},
+		{
+			MethodName: "BulkAppendLogEntries",
+			Handler:    _RaftOperations_BulkAppendLogEntries_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

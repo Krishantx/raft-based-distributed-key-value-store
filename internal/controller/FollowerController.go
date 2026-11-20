@@ -2,10 +2,13 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"sync"
+	"time"
 
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/loggers"
@@ -14,6 +17,9 @@ import (
 	pb "raft-based-kv/proto"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/experimental/balancer/hostname"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type server struct {
@@ -63,6 +69,93 @@ func (this *voting) StartVoting(ctx context.Context, req *pb.NodeInfo) (*pb.Vote
 	}, nil
 }
 
+func create_gRPC_clients() [5]pb.RaftOperationsClient {
+	var hostnames = [...]string{"raft-node-1", "raft-node-2", "raft-node-3", "raft-node-4", "raft-node-5"}
+	var clients [5]pb.RaftOperationsClient
+	port := "50051"
+	for i := 0; i < len(hostnames); i++ {
+		addr := hostnames[i] + ":" + port
+		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("Failed to connect : %s: %v", addr, err)
+		}
+		clients[i] = pb.NewRaftOperationsClient(conn)
+
+	}
+	return clients
+}
+
+func find_leader_client(clients *[5]pb.RaftOperationsClient) (pb.RaftOperationsClient, error) {
+	for i := 0; i < len(clients); i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		role, err := clients[i].GetRole(ctx, &emptypb.Empty{})
+		if err != nil {
+			log.Println("Node returned an error")
+		}
+		if role.NodeRole == "leader" {
+			leader_client := clients[i]
+			return leader_client, nil
+		}
+	}
+	return nil, errors.New("Cannot find the leader node")
+}
+
+func bulk_append_log_entries() error {
+	return nil
+}
+
+func followerIndexRecovery(nrd *models.NodeRaftData) {
+	clients := create_gRPC_clients()
+
+	// Find who the leader is:
+	leader_client, err := find_leader_client(&clients)
+	if err != nil {
+		return
+	}
+	// Ask the leader what its commit index is
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	leader_last_commit_index, err := leader_client.GetLastCommitIndex(ctx, &emptypb.Empty{})
+	if err != nil {
+		log.Println("Could not fetch the commit count of the leader. Will try again")
+		return
+	}
+	// Start bulk writes of 100
+
+	bulk_append_start_idx := nrd.GetCommitIndex() + 1
+	total_logs_to_append := leader_last_commit_index.LeaderLastCommitIndex - bulk_append_start_idx + 1
+	var total_iterations float64 = float64(total_logs_to_append / 100)
+	total_iterations = math.Ceil(total_iterations)
+	for i := uint64(1); i <= uint64(total_iterations); i++ {
+		to_commit_index := math.Max(float64(leader_last_commit_index.LeaderLastCommitIndex), float64(bulk_append_start_idx+(i*100)))
+		request := &pb.BulkAppendRequest{
+			FromCommitIndex: bulk_append_start_idx,
+			ToCommitIndex:   uint64(to_commit_index),
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		leader_client.BulkAppendLogEntries(ctx, request)
+	}
+
+	err = bulk_append_log_entries()
+
+	if err != nil {
+		log.Println("Unable to append log entries")
+	}
+
+	err = bulk_commit_log_entries()
+
+	if err != nil {
+		log.Println("Unable to commit log entries")
+	}
+	return
+}
+
+func bulk_commit_log_entries() error {
+	return nil
+}
+
 func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry) (*pb.IsAppended, error) {
 	lastLogIndex := this.nodeRaftData.GetIndex()
 	lastLogTerm := this.nodeRaftData.GetTerm()
@@ -83,6 +176,7 @@ func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry)
 
 	if reqLastLogIndex != lastLogIndex {
 		log.Println("I have missed few indexes and need to catch up")
+		go followerIndexRecovery(this.nodeRaftData)
 		return &pb.IsAppended{
 			IsAppended:      false,
 			LastCommitIndex: this.nodeRaftData.GetIndex(),

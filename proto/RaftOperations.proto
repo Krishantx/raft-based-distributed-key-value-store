@@ -1,10 +1,33 @@
 syntax="proto3";
 
+import 'google/protobuf/empty.proto';
+
 option go_package="./proto";
 
 service RaftOperations {
   rpc AppendEntries(Entry) returns (IsAppended);
   rpc CommitEntry(Entry) returns (IsCommited);
+  rpc GetRole(google.protobuf.Empty) returns (Role);
+  rpc GetLastCommitIndex(google.protobuf.Empty) returns (LastCommitIndex);
+  rpc BulkAppendLogEntries(BulkAppendRequest) returns (BulkAppendResponse);
+}
+
+message LastCommitIndex {
+  uint64 leader_last_commit_index = 1;
+}
+
+message Role {
+  string node_role = 1;
+}
+
+message BulkAppendRequest {
+  uint64 fromCommitIndex = 1;
+  uint64 toCommitIndex = 2;
+}
+
+message BulkAppendResponse { 
+  repeated Entry Entries = 1;
+  uint64 leader_last_commit_index = 2;
 }
 
 message Entry {

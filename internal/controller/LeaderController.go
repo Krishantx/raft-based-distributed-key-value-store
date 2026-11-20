@@ -19,6 +19,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+type leaderRaftOperations struct {
+	pb.UnimplementedRaftOperationsServer
+}
+
 type proxyToNode struct {
 	pb.UnimplementedProxyToNodeServer
 	repository   repository.Repo
@@ -264,7 +268,7 @@ func StartLeaderController(repository repository.Repo, nodeRaftData *models.Node
 		repository:   repository,
 		raftNodeData: nodeRaftData,
 	})
-
+	pb.RegisterRaftOperationsServer(leaderController, &leaderRaftOperations{})
 	fmt.Println("gRPC Listing on port: 50051")
 	go func() {
 		err = leaderController.Serve(lis)

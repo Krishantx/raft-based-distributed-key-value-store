@@ -9,6 +9,7 @@ package proto
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -20,6 +21,198 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+type LastCommitIndex struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	LeaderLastCommitIndex uint64                 `protobuf:"varint,1,opt,name=leader_last_commit_index,json=leaderLastCommitIndex,proto3" json:"leader_last_commit_index,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *LastCommitIndex) Reset() {
+	*x = LastCommitIndex{}
+	mi := &file_proto_RaftOperations_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LastCommitIndex) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LastCommitIndex) ProtoMessage() {}
+
+func (x *LastCommitIndex) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_RaftOperations_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LastCommitIndex.ProtoReflect.Descriptor instead.
+func (*LastCommitIndex) Descriptor() ([]byte, []int) {
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *LastCommitIndex) GetLeaderLastCommitIndex() uint64 {
+	if x != nil {
+		return x.LeaderLastCommitIndex
+	}
+	return 0
+}
+
+type Role struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeRole      string                 `protobuf:"bytes,1,opt,name=node_role,json=nodeRole,proto3" json:"node_role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Role) Reset() {
+	*x = Role{}
+	mi := &file_proto_RaftOperations_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Role) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Role) ProtoMessage() {}
+
+func (x *Role) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_RaftOperations_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Role.ProtoReflect.Descriptor instead.
+func (*Role) Descriptor() ([]byte, []int) {
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Role) GetNodeRole() string {
+	if x != nil {
+		return x.NodeRole
+	}
+	return ""
+}
+
+type BulkAppendRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	FromCommitIndex uint64                 `protobuf:"varint,1,opt,name=fromCommitIndex,proto3" json:"fromCommitIndex,omitempty"`
+	ToCommitIndex   uint64                 `protobuf:"varint,2,opt,name=toCommitIndex,proto3" json:"toCommitIndex,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *BulkAppendRequest) Reset() {
+	*x = BulkAppendRequest{}
+	mi := &file_proto_RaftOperations_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BulkAppendRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BulkAppendRequest) ProtoMessage() {}
+
+func (x *BulkAppendRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_RaftOperations_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BulkAppendRequest.ProtoReflect.Descriptor instead.
+func (*BulkAppendRequest) Descriptor() ([]byte, []int) {
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *BulkAppendRequest) GetFromCommitIndex() uint64 {
+	if x != nil {
+		return x.FromCommitIndex
+	}
+	return 0
+}
+
+func (x *BulkAppendRequest) GetToCommitIndex() uint64 {
+	if x != nil {
+		return x.ToCommitIndex
+	}
+	return 0
+}
+
+type BulkAppendResponse struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	Entries               []*Entry               `protobuf:"bytes,1,rep,name=Entries,proto3" json:"Entries,omitempty"`
+	LeaderLastCommitIndex uint64                 `protobuf:"varint,2,opt,name=leader_last_commit_index,json=leaderLastCommitIndex,proto3" json:"leader_last_commit_index,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *BulkAppendResponse) Reset() {
+	*x = BulkAppendResponse{}
+	mi := &file_proto_RaftOperations_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BulkAppendResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BulkAppendResponse) ProtoMessage() {}
+
+func (x *BulkAppendResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_RaftOperations_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BulkAppendResponse.ProtoReflect.Descriptor instead.
+func (*BulkAppendResponse) Descriptor() ([]byte, []int) {
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *BulkAppendResponse) GetEntries() []*Entry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *BulkAppendResponse) GetLeaderLastCommitIndex() uint64 {
+	if x != nil {
+		return x.LeaderLastCommitIndex
+	}
+	return 0
+}
 
 type Entry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -34,7 +227,7 @@ type Entry struct {
 
 func (x *Entry) Reset() {
 	*x = Entry{}
-	mi := &file_proto_RaftOperations_proto_msgTypes[0]
+	mi := &file_proto_RaftOperations_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +239,7 @@ func (x *Entry) String() string {
 func (*Entry) ProtoMessage() {}
 
 func (x *Entry) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_RaftOperations_proto_msgTypes[0]
+	mi := &file_proto_RaftOperations_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +252,7 @@ func (x *Entry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Entry.ProtoReflect.Descriptor instead.
 func (*Entry) Descriptor() ([]byte, []int) {
-	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{0}
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Entry) GetLastLogTerm() uint64 {
@@ -107,7 +300,7 @@ type IsAppended struct {
 
 func (x *IsAppended) Reset() {
 	*x = IsAppended{}
-	mi := &file_proto_RaftOperations_proto_msgTypes[1]
+	mi := &file_proto_RaftOperations_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -119,7 +312,7 @@ func (x *IsAppended) String() string {
 func (*IsAppended) ProtoMessage() {}
 
 func (x *IsAppended) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_RaftOperations_proto_msgTypes[1]
+	mi := &file_proto_RaftOperations_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -132,7 +325,7 @@ func (x *IsAppended) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsAppended.ProtoReflect.Descriptor instead.
 func (*IsAppended) Descriptor() ([]byte, []int) {
-	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{1}
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *IsAppended) GetIsAppended() bool {
@@ -158,7 +351,7 @@ type IsCommited struct {
 
 func (x *IsCommited) Reset() {
 	*x = IsCommited{}
-	mi := &file_proto_RaftOperations_proto_msgTypes[2]
+	mi := &file_proto_RaftOperations_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -170,7 +363,7 @@ func (x *IsCommited) String() string {
 func (*IsCommited) ProtoMessage() {}
 
 func (x *IsCommited) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_RaftOperations_proto_msgTypes[2]
+	mi := &file_proto_RaftOperations_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -183,7 +376,7 @@ func (x *IsCommited) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsCommited.ProtoReflect.Descriptor instead.
 func (*IsCommited) Descriptor() ([]byte, []int) {
-	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{2}
+	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *IsCommited) GetIsCommited() bool {
@@ -197,7 +390,17 @@ var File_proto_RaftOperations_proto protoreflect.FileDescriptor
 
 const file_proto_RaftOperations_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/RaftOperations.proto\"\x8f\x01\n" +
+	"\x1aproto/RaftOperations.proto\x1a\x1bgoogle/protobuf/empty.proto\"J\n" +
+	"\x0fLastCommitIndex\x127\n" +
+	"\x18leader_last_commit_index\x18\x01 \x01(\x04R\x15leaderLastCommitIndex\"#\n" +
+	"\x04Role\x12\x1b\n" +
+	"\tnode_role\x18\x01 \x01(\tR\bnodeRole\"c\n" +
+	"\x11BulkAppendRequest\x12(\n" +
+	"\x0ffromCommitIndex\x18\x01 \x01(\x04R\x0ffromCommitIndex\x12$\n" +
+	"\rtoCommitIndex\x18\x02 \x01(\x04R\rtoCommitIndex\"o\n" +
+	"\x12BulkAppendResponse\x12 \n" +
+	"\aEntries\x18\x01 \x03(\v2\x06.EntryR\aEntries\x127\n" +
+	"\x18leader_last_commit_index\x18\x02 \x01(\x04R\x15leaderLastCommitIndex\"\x8f\x01\n" +
 	"\x05Entry\x12 \n" +
 	"\vlastLogTerm\x18\x01 \x01(\x04R\vlastLogTerm\x12\"\n" +
 	"\flastLogIndex\x18\x02 \x01(\x04R\flastLogIndex\x12\x18\n" +
@@ -214,10 +417,13 @@ const file_proto_RaftOperations_proto_rawDesc = "" +
 	"IsCommited\x12\x1e\n" +
 	"\n" +
 	"IsCommited\x18\x01 \x01(\bR\n" +
-	"IsCommited2Z\n" +
+	"IsCommited2\x85\x02\n" +
 	"\x0eRaftOperations\x12$\n" +
 	"\rAppendEntries\x12\x06.Entry\x1a\v.IsAppended\x12\"\n" +
-	"\vCommitEntry\x12\x06.Entry\x1a\v.IsCommitedB\tZ\a./protob\x06proto3"
+	"\vCommitEntry\x12\x06.Entry\x1a\v.IsCommited\x12(\n" +
+	"\aGetRole\x12\x16.google.protobuf.Empty\x1a\x05.Role\x12>\n" +
+	"\x12GetLastCommitIndex\x12\x16.google.protobuf.Empty\x1a\x10.LastCommitIndex\x12?\n" +
+	"\x14BulkAppendLogEntries\x12\x12.BulkAppendRequest\x1a\x13.BulkAppendResponseB\tZ\a./protob\x06proto3"
 
 var (
 	file_proto_RaftOperations_proto_rawDescOnce sync.Once
@@ -231,22 +437,34 @@ func file_proto_RaftOperations_proto_rawDescGZIP() []byte {
 	return file_proto_RaftOperations_proto_rawDescData
 }
 
-var file_proto_RaftOperations_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_proto_RaftOperations_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_RaftOperations_proto_goTypes = []any{
-	(*Entry)(nil),      // 0: Entry
-	(*IsAppended)(nil), // 1: IsAppended
-	(*IsCommited)(nil), // 2: IsCommited
+	(*LastCommitIndex)(nil),    // 0: LastCommitIndex
+	(*Role)(nil),               // 1: Role
+	(*BulkAppendRequest)(nil),  // 2: BulkAppendRequest
+	(*BulkAppendResponse)(nil), // 3: BulkAppendResponse
+	(*Entry)(nil),              // 4: Entry
+	(*IsAppended)(nil),         // 5: IsAppended
+	(*IsCommited)(nil),         // 6: IsCommited
+	(*emptypb.Empty)(nil),      // 7: google.protobuf.Empty
 }
 var file_proto_RaftOperations_proto_depIdxs = []int32{
-	0, // 0: RaftOperations.AppendEntries:input_type -> Entry
-	0, // 1: RaftOperations.CommitEntry:input_type -> Entry
-	1, // 2: RaftOperations.AppendEntries:output_type -> IsAppended
-	2, // 3: RaftOperations.CommitEntry:output_type -> IsCommited
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: BulkAppendResponse.Entries:type_name -> Entry
+	4, // 1: RaftOperations.AppendEntries:input_type -> Entry
+	4, // 2: RaftOperations.CommitEntry:input_type -> Entry
+	7, // 3: RaftOperations.GetRole:input_type -> google.protobuf.Empty
+	7, // 4: RaftOperations.GetLastCommitIndex:input_type -> google.protobuf.Empty
+	2, // 5: RaftOperations.BulkAppendLogEntries:input_type -> BulkAppendRequest
+	5, // 6: RaftOperations.AppendEntries:output_type -> IsAppended
+	6, // 7: RaftOperations.CommitEntry:output_type -> IsCommited
+	1, // 8: RaftOperations.GetRole:output_type -> Role
+	0, // 9: RaftOperations.GetLastCommitIndex:output_type -> LastCommitIndex
+	3, // 10: RaftOperations.BulkAppendLogEntries:output_type -> BulkAppendResponse
+	6, // [6:11] is the sub-list for method output_type
+	1, // [1:6] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_proto_RaftOperations_proto_init() }
@@ -260,7 +478,7 @@ func file_proto_RaftOperations_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_RaftOperations_proto_rawDesc), len(file_proto_RaftOperations_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

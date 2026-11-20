@@ -37,6 +37,12 @@ func (l *leaderRaftOperations) GetRole(ctx context.Context, req *emptypb.Empty) 
 	}, nil
 }
 
+func (l *leaderRaftOperations) GetLastCommitIndex(ctx context.Context, req *emptypb.Empty) (*pb.LastCommitIndex, error) {
+	return &pb.LastCommitIndex{
+		LeaderLastCommitIndex: l.raftNodeData.GetCommitIndex(),
+	}, nil
+}
+
 func appendToSelf(logEntry *pb.Entry, nrd *models.NodeRaftData) {
 	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", logEntry.LastLogIndex+1, logEntry.LastLogTerm, logEntry.Command, logEntry.Key, logEntry.Value)
 	nrd.IncrementIndex()

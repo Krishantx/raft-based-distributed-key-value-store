@@ -44,9 +44,9 @@ func NewRequestForwarder() requestForwarder {
 
 func (this *requestForwarder) getKeyValue(key string, req *pb.Key) (*pb.Response, error) {
 	clients := this.broadcastAllNodes()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 		response, err := clients[i].GetKeyValue(ctx, req)
 		if err != nil {
 			fmt.Println(err)
@@ -61,9 +61,9 @@ func (this *requestForwarder) getKeyValue(key string, req *pb.Key) (*pb.Response
 
 func (this *requestForwarder) deleteKeyValue(key string, req *pb.Key) (*pb.Response, error) {
 	clients := this.broadcastAllNodes()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 		response, err := clients[i].DeleteKeyValue(ctx, req)
 		if err != nil {
 			fmt.Println(err)
@@ -78,9 +78,9 @@ func (this *requestForwarder) deleteKeyValue(key string, req *pb.Key) (*pb.Respo
 
 func (this *requestForwarder) addKeyValue(req *pb.KeyValue) (*pb.Response, error) {
 	clients := this.broadcastAllNodes()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
 		response, err := clients[i].AddKeyValue(ctx, req)
 		if err != nil {
 			fmt.Println(err)
@@ -95,9 +95,9 @@ func (this *requestForwarder) addKeyValue(req *pb.KeyValue) (*pb.Response, error
 
 func (this *requestForwarder) putKeyValue(req *pb.KeyValue) (*pb.Response, error) {
 	clients := this.broadcastAllNodes()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
 		response, err := clients[i].PutKeyValue(ctx, req)
 		if err != nil {
 			fmt.Println(err)
@@ -116,7 +116,7 @@ func (this *requestForwarder) broadcastAllNodes() [5]pb.ProxyToNodeClient {
 		addr := this.allNodeDetails[i].hostname + ":" + this.allNodeDetails[i].port
 		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
-			log.Fatalf("Failed to connect : %s: %v", addr, err)
+			log.Printf("Failed to connect : %s: %v", addr, err)
 		}
 
 		client := pb.NewProxyToNodeClient(conn)

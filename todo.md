@@ -8,7 +8,9 @@
 - [ ] When a key does not exits for a DELETE endpoint
 - [ ] Fix race condition if 2 candidate requests hit @ the same time and can cause the term to break
 - [ ] Use a database to store logs and indexes
-- [ ] I am currently checking weather the operation can be performed AFTER Appending to the logs. This is not incorrect but not isnt correct either because on paper when I reiterate through the logs I am going to arrive at the same state but I am storing more logs this way. I can skip saving the logs if the operation would give me an error for example PUT in a key that does not exist.
+- [ ] I am currently checking weather the operation can be performed AFTER Appending to the logs. This is not incorrect but not isnt correct either because on paper when I reiterate 
+- [ ] Whenever a node goes down, the entire cluster becomes unresponsive.
+through the logs I am going to arrive at the same state but I am storing more logs this way. I can skip saving the logs if the operation would give me an error for example PUT in a key that does not exist.
 ## Proxy Node
 - [DONE] Receives HTTP Requests from the client and forwards them to the raft nodes
 - [DONE] Broadcasts the requests to all the nodes in the cluster (Hardcoded for now)

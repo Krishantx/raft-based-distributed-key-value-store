@@ -36,3 +36,7 @@ func (this *NodeRaftData) Init() {
 	this.index = 0
 	this.term = 0
 }
+
+func (s *NodeRaftData) SetTerm(term uint64) {
+	s.term = term
+}

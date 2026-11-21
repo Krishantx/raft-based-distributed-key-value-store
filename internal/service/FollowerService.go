@@ -45,7 +45,8 @@ func (this *FollowerService) Close() {
 }
 func (this *FollowerService) StartElectionTimer() {
 	fmt.Println("Election Timer Started")
-	duration := time.Duration(rand.Intn(5-3)+3) * time.Second
+	duration := time.Duration(rand.Intn(5000-3000)+3000) * time.Millisecond
+	log.Printf("Timer set for period: %v", duration)
 	timer := time.NewTimer(duration)
 	for this.config.Role == enums.Follower {
 		select {

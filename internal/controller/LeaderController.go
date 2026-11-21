@@ -31,6 +31,16 @@ type proxyToNode struct {
 	raftNodeData *models.NodeRaftData
 }
 
+func (l *leaderRaftOperations) BulkAppendLogEntries(ctx context.Context, req *pb.BulkAppendRequest) (*pb.BulkAppendResponse, error) {
+
+	entries := []*pb.Entry{}
+	for i := req.FromCommitIndex; i <= req.ToCommitIndex; i++ {
+		entries[i-req.FromCommitIndex] = &pb.Entry{}
+	}
+	res := &pb.BulkAppendResponse{}
+	return res, nil
+}
+
 func (l *leaderRaftOperations) GetRole(ctx context.Context, req *emptypb.Empty) (*pb.Role, error) {
 	return &pb.Role{
 		NodeRole: "leader",
@@ -44,17 +54,17 @@ func (l *leaderRaftOperations) GetLastCommitIndex(ctx context.Context, req *empt
 }
 
 func appendToSelf(logEntry *pb.Entry, nrd *models.NodeRaftData) {
-	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", logEntry.LastLogIndex+1, logEntry.LastLogTerm, logEntry.Command, logEntry.Key, logEntry.Value)
+	loggers.Raft.Printf("{\"Index\": \"%v\", \"Term\": \"%v\", \"Command\": \"%s\", \"Key\": \"%s\", \"Value\" : \"%s\"}", logEntry.LogIndex, logEntry.LogTerm, logEntry.Command, logEntry.Key, logEntry.Value)
 	nrd.IncrementIndex()
 }
 
 func logEntryBuilder(rnd *models.NodeRaftData, c string, k string, v string) pb.Entry {
 	return pb.Entry{
-		LastLogIndex: rnd.GetIndex(),
-		LastLogTerm:  rnd.GetTerm(),
-		Command:      c,
-		Key:          k,
-		Value:        v,
+		LogIndex: rnd.GetIndex(),
+		LogTerm:  rnd.GetTerm(),
+		Command:  c,
+		Key:      k,
+		Value:    v,
 	}
 }
 
@@ -243,11 +253,11 @@ func SendCommitEntryGRPC() error {
 			defer cancel()
 
 			req := &pb.Entry{
-				LastLogTerm:  1,
-				LastLogIndex: 1,
-				Command:      "GET",
-				Key:          "key",
-				Value:        "value",
+				LogTerm:  1,
+				LogIndex: 1,
+				Command:  "GET",
+				Key:      "key",
+				Value:    "value",
 			}
 			response, err := client.CommitEntry(ctx, req)
 

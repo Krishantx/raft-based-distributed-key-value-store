@@ -7,13 +7,12 @@
 package proto
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -217,8 +216,8 @@ func (x *BulkAppendResponse) GetLeaderLastCommitIndex() uint64 {
 
 type Entry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LastLogTerm   uint64                 `protobuf:"varint,1,opt,name=lastLogTerm,proto3" json:"lastLogTerm,omitempty"`
-	LastLogIndex  uint64                 `protobuf:"varint,2,opt,name=lastLogIndex,proto3" json:"lastLogIndex,omitempty"`
+	LogTerm       uint64                 `protobuf:"varint,1,opt,name=LogTerm,proto3" json:"LogTerm,omitempty"`
+	LogIndex      uint64                 `protobuf:"varint,2,opt,name=LogIndex,proto3" json:"LogIndex,omitempty"`
 	Command       string                 `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`
 	Key           string                 `protobuf:"bytes,4,opt,name=key,proto3" json:"key,omitempty"`
 	Value         string                 `protobuf:"bytes,5,opt,name=value,proto3" json:"value,omitempty"`
@@ -256,16 +255,16 @@ func (*Entry) Descriptor() ([]byte, []int) {
 	return file_proto_RaftOperations_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Entry) GetLastLogTerm() uint64 {
+func (x *Entry) GetLogTerm() uint64 {
 	if x != nil {
-		return x.LastLogTerm
+		return x.LogTerm
 	}
 	return 0
 }
 
-func (x *Entry) GetLastLogIndex() uint64 {
+func (x *Entry) GetLogIndex() uint64 {
 	if x != nil {
-		return x.LastLogIndex
+		return x.LogIndex
 	}
 	return 0
 }
@@ -401,10 +400,10 @@ const file_proto_RaftOperations_proto_rawDesc = "" +
 	"\rtoCommitIndex\x18\x02 \x01(\x04R\rtoCommitIndex\"o\n" +
 	"\x12BulkAppendResponse\x12 \n" +
 	"\aEntries\x18\x01 \x03(\v2\x06.EntryR\aEntries\x127\n" +
-	"\x18leader_last_commit_index\x18\x02 \x01(\x04R\x15leaderLastCommitIndex\"\x8f\x01\n" +
-	"\x05Entry\x12 \n" +
-	"\vlastLogTerm\x18\x01 \x01(\x04R\vlastLogTerm\x12\"\n" +
-	"\flastLogIndex\x18\x02 \x01(\x04R\flastLogIndex\x12\x18\n" +
+	"\x18leader_last_commit_index\x18\x02 \x01(\x04R\x15leaderLastCommitIndex\"\x7f\n" +
+	"\x05Entry\x12\x18\n" +
+	"\aLogTerm\x18\x01 \x01(\x04R\aLogTerm\x12\x1a\n" +
+	"\bLogIndex\x18\x02 \x01(\x04R\bLogIndex\x12\x18\n" +
 	"\acommand\x18\x03 \x01(\tR\acommand\x12\x10\n" +
 	"\x03key\x18\x04 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x05 \x01(\tR\x05value\"V\n" +

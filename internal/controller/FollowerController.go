@@ -164,8 +164,8 @@ func (this *raftOperations) AppendEntries(contex context.Context, req *pb.Entry)
 	reqCommand := req.Command
 	reqKey := req.Key
 	reqValue := req.Value
-	reqLastLogIndex := req.LastLogIndex
-	reqLastLogTerm := req.LastLogTerm
+	reqLastLogIndex := req.LogIndex
+	reqLastLogTerm := req.LogTerm
 
 	if reqLastLogTerm < lastLogTerm {
 		log.Println("The Request Comes from a stale leader and is ignored")

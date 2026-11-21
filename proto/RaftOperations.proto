@@ -31,8 +31,8 @@ message BulkAppendResponse {
 }
 
 message Entry {
-  uint64 lastLogTerm = 1;
-  uint64 lastLogIndex = 2;
+  uint64 LogTerm = 1;
+  uint64 LogIndex = 2;
   string command = 3;
   string key = 4;
   string value = 5;

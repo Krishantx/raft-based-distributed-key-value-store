@@ -6,7 +6,7 @@ import (
 )
 
 type ProxyService struct {
-	requestForwarder requestForwarder
+	requestForwarder *requestForwarder
 }
 
 func NewProxyService() ProxyService {

@@ -203,7 +203,6 @@ func (this *raftOperations) CommitEntry(context context.Context, req *pb.Entry) 
 }
 
 func (s *server) ReceiveHeartbeat(context context.Context, in *pb.Leader) (*pb.ClientConfirmation, error) {
-	fmt.Println("Heartbeat Recieved")
 	s.timerOps <- enums.RESET
 	return &pb.ClientConfirmation{
 		Term: 1,

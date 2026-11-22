@@ -84,7 +84,6 @@ func (s *proxyToNode) AddKeyValue(ctx context.Context, req *pb.KeyValue) (*pb.Re
 	if err != nil {
 		return &pb.Response{}, err
 	}
-	log.Println("Commit To Leader Successful")
 	s.raftNodeData.IncrementCommitIndex()
 
 	keyValue, err := s.repository.AddKeyValue(req.Key, req.Value)

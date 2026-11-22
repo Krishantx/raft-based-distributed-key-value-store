@@ -2,6 +2,7 @@ package clients
 
 import (
 	"log"
+
 	pb "raft-based-kv/proto"
 
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ var (
 )
 
 func CreateProxyToNodeClients() {
+	ProxyToNodeClients = make([]pb.ProxyToNodeClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
 		addr := HOSTNAME[i] + ":" + PORT
 		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))

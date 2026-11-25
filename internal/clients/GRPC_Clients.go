@@ -14,7 +14,8 @@ var HOSTNAME = []string{"raft-node-1", "raft-node-2", "raft-node-3", "raft-node-
 const PORT = "50051"
 
 var (
-	ProxyToNodeClients []pb.ProxyToNodeClient
+	ProxyToNodeClients    []pb.ProxyToNodeClient
+	RaftOperationsClients []pb.RaftOperationsClient
 )
 
 func CreateProxyToNodeClients() {
@@ -27,4 +28,17 @@ func CreateProxyToNodeClients() {
 		}
 		ProxyToNodeClients[i] = pb.NewProxyToNodeClient(conn)
 	}
+}
+
+func CreateRaftOperationsClient() {
+	RaftOperationsClients = make([]pb.RaftOperationsClient, len(HOSTNAME))
+	for i := 0; i < len(HOSTNAME); i++ {
+		addr := HOSTNAME[i] + ":" + PORT
+		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Println("Failed to connect to client")
+		}
+		RaftOperationsClients[i] = pb.NewRaftOperationsClient(conn)
+	}
+
 }

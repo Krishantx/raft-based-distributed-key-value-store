@@ -16,7 +16,20 @@ const PORT = "50051"
 var (
 	ProxyToNodeClients    []pb.ProxyToNodeClient
 	RaftOperationsClients []pb.RaftOperationsClient
+	HeartbeatClients      []pb.HeartbeatServiceClient
 )
+
+func CreateHeartbeatClients() {
+	HeartbeatClients = make([]pb.HeartbeatServiceClient, len(HOSTNAME))
+	for i := 0; i < len(HOSTNAME); i++ {
+		addr := HOSTNAME[i] + ":" + PORT
+		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Println("failed to connect to client")
+		}
+		HeartbeatClients[i] = pb.NewHeartbeatServiceClient(conn)
+	}
+}
 
 func CreateProxyToNodeClients() {
 	ProxyToNodeClients = make([]pb.ProxyToNodeClient, len(HOSTNAME))

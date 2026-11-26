@@ -17,41 +17,41 @@ var (
 	ProxyToNodeClients    []pb.ProxyToNodeClient
 	RaftOperationsClients []pb.RaftOperationsClient
 	HeartbeatClients      []pb.HeartbeatServiceClient
+	clientConn            []*grpc.ClientConn
 )
 
 func CreateHeartbeatClients() {
 	HeartbeatClients = make([]pb.HeartbeatServiceClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
-		addr := HOSTNAME[i] + ":" + PORT
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Println("failed to connect to client")
-		}
-		HeartbeatClients[i] = pb.NewHeartbeatServiceClient(conn)
+		HeartbeatClients[i] = pb.NewHeartbeatServiceClient(clientConn[i])
 	}
 }
 
 func CreateProxyToNodeClients() {
 	ProxyToNodeClients = make([]pb.ProxyToNodeClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
-		addr := HOSTNAME[i] + ":" + PORT
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Println("failed to connect to client")
-		}
-		ProxyToNodeClients[i] = pb.NewProxyToNodeClient(conn)
+		ProxyToNodeClients[i] = pb.NewProxyToNodeClient(clientConn[i])
 	}
 }
 
 func CreateRaftOperationsClient() {
 	RaftOperationsClients = make([]pb.RaftOperationsClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
-		addr := HOSTNAME[i] + ":" + PORT
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Println("Failed to connect to client")
-		}
-		RaftOperationsClients[i] = pb.NewRaftOperationsClient(conn)
+		RaftOperationsClients[i] = pb.NewRaftOperationsClient(clientConn[i])
 	}
+}
 
+func createClientConns() {
+	for i := 0; i < len(HOSTNAME); i++ {
+		clientConn[i] = createClientConn(HOSTNAME[i])
+	}
+}
+
+func createClientConn(hostname string) *grpc.ClientConn {
+	addr := hostname + ":" + PORT
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Println("Failed to connect to client")
+	}
+	return conn
 }

@@ -21,6 +21,9 @@ var (
 )
 
 func CreateHeartbeatClients() {
+	if len(clientConn) == 0 {
+		createClientConns()
+	}
 	HeartbeatClients = make([]pb.HeartbeatServiceClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
 		HeartbeatClients[i] = pb.NewHeartbeatServiceClient(clientConn[i])
@@ -28,6 +31,9 @@ func CreateHeartbeatClients() {
 }
 
 func CreateProxyToNodeClients() {
+	if len(clientConn) == 0 {
+		createClientConns()
+	}
 	ProxyToNodeClients = make([]pb.ProxyToNodeClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
 		ProxyToNodeClients[i] = pb.NewProxyToNodeClient(clientConn[i])
@@ -35,6 +41,9 @@ func CreateProxyToNodeClients() {
 }
 
 func CreateRaftOperationsClient() {
+	if len(clientConn) == 0 {
+		createClientConns()
+	}
 	RaftOperationsClients = make([]pb.RaftOperationsClient, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
 		RaftOperationsClients[i] = pb.NewRaftOperationsClient(clientConn[i])
@@ -42,6 +51,7 @@ func CreateRaftOperationsClient() {
 }
 
 func createClientConns() {
+	clientConn = make([]*grpc.ClientConn, len(HOSTNAME))
 	for i := 0; i < len(HOSTNAME); i++ {
 		clientConn[i] = createClientConn(HOSTNAME[i])
 	}

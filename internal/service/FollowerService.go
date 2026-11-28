@@ -59,7 +59,7 @@ func (this *FollowerService) StartElectionTimer() {
 			if a == enums.STOP {
 				timer.Stop()
 			} else if a == enums.RESET {
-				fmt.Println("Timer Reset")
+
 				timer.Reset(duration)
 			}
 		}

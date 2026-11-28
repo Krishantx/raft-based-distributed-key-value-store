@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"raft-based-kv/internal/clients"
 	"raft-based-kv/internal/enums"
 	"raft-based-kv/internal/models"
 	pb "raft-based-kv/proto"
@@ -18,8 +17,7 @@ import (
 )
 
 type CandidateService struct {
-	grpcClients clients.GRPCClientList
-	config      *models.Config
+	config *models.Config
 }
 
 func NewCandidateService(config *models.Config) CandidateService {
